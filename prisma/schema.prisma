@@ -19,17 +19,41 @@ model User {
   name      String?
   posts     Post[]
   createdAt DateTime @default(now())
+  comments Comment[]
 }
 
 model Post {
-  id          Int      @id @default(autoincrement())
-  title       String
-  slug        String   @unique
-  content     String
-  description String
-  image       String
-  category    String
-  createdAt   DateTime @default(now())
-  author      User     @relation(fields: [authorId], references: [id])
-  authorId    Int
+  id           Int       @id @default(autoincrement())
+  title        String
+  slug         String    @unique
+  content      String
+  description  String
+  excerpt      String?
+  image        String
+  category     String
+  isFeatured   Boolean   @default(false)
+  views        Int       @default(0)
+  readingTime  Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  author       User      @relation(fields: [authorId], references: [id])
+  authorId     Int
+  comments     Comment[]
+  tags         Tag[]
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  createdAt DateTime @default(now())
 }
