@@ -9,10 +9,12 @@ const baseTypeDefs = gql`
   type Mutation
 `;
 
-export const typeDefs = [
+const typeDefs = [
   baseTypeDefs,
   postTypeDefs,
   userTypeDefs,
   tagTypeDefs,
   commentTypeDefs,
 ];
+
+export default typeDefs
