@@ -11,7 +11,7 @@ const postTypeDefs = gql`
     excerpt: String
     image: String!
     category: String!
-    tags: [Tag!]!
+    tags: [Tag]
     views: Int
     readingTime: Int
     isFeatured: Boolean!
@@ -19,7 +19,7 @@ const postTypeDefs = gql`
     updatedAt: String!
     author: User!
     authorId: Int!
-    comments: [Comment!]!
+    comments: [Comment]
   }
 
   type Query {

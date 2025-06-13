@@ -1,5 +1,5 @@
-import pkg from '@prisma/client'
-const { PrismaClient } = pkg
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 const prisma = new PrismaClient();
 
 async function main() {
@@ -15,7 +15,7 @@ async function main() {
 
   // Tạo tags
   const tagNames = ['AI', 'VR', 'Blockchain', 'Cloud', 'DevOps', 'Cybersecurity'];
-  const tags = await Promise.all(
+  await Promise.all(
     tagNames.map((name) =>
       prisma.tag.upsert({
         where: { name },
@@ -25,7 +25,6 @@ async function main() {
     )
   );
 
-  // Dữ liệu bài viết
   const postsData = [
     {
       title: 'Exploring the Future of AI in Everyday Life',
@@ -89,7 +88,28 @@ async function main() {
     },
   ];
 
-  // Tạo từng bài post
+  const commentTemplates = [
+    "Amazing insights. I learned something new!",
+    "Could you go deeper on this topic?",
+    "Thanks for the explanation, really helpful.",
+    "Nice article! Keep up the great work.",
+    "Interesting take. Would love more examples.",
+    "This clarified a lot of things for me.",
+    "Looking forward to more posts like this.",
+    "Great read. Helped me understand better.",
+  ];
+
+  function getRandomComments() {
+    const shuffled = [...commentTemplates].sort(() => 0.5 - Math.random());
+    const count = Math.floor(Math.random() * 3) + 2; // 2 to 4 comments
+    return shuffled.slice(0, count).map((content) => ({
+      content,
+      author: {
+        connect: { id: author.id },
+      },
+    }));
+  }
+
   for (const post of postsData) {
     const createdPost = await prisma.post.create({
       data: {
@@ -105,13 +125,15 @@ async function main() {
         readingTime: Math.floor(Math.random() * 5) + 3,
         authorId: author.id,
         tags: {
-          connect: post.tags.map((name) => ({
-            name,
-          })),
+          connect: post.tags.map((name) => ({ name })),
+        },
+        comments: {
+          create: getRandomComments(),
         },
       },
     });
 
+    console.log(`Created post: ${createdPost.title}`);
   }
 }
 

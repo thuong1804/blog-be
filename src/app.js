@@ -16,9 +16,9 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-app.use(express.static('public'));
-
 const app = express();
+
+app.use(express.static('public'));
 
 app.use(cors());
 app.use(express.json());
@@ -29,7 +29,9 @@ app.use((req, res, next) => {
   }
   next();
 });
+
 await apolloServer.start();
+
 app.use('/graphql', expressMiddleware(apolloServer, {
   context: async ({ req, res }) => ({ req, res })
 }));
