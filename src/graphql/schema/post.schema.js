@@ -10,7 +10,7 @@ const postTypeDefs = gql`
     description: String!
     excerpt: String
     image: String!
-    category: String!
+    category: Category!
     tags: [Tag]
     views: Int
     readingTime: Int

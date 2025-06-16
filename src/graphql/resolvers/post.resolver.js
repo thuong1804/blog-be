@@ -3,13 +3,25 @@ const prisma = new PrismaClient();
 
 export const postResolvers = {
   Query: {
-   posts: async () => {
+    posts: async () => {
       return await prisma.post.findMany({
-         include: {
+        include: {
           tags: true,
           author: true,
           comments: true,
-        }});
+          category: {
+            include: {
+              children: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                },
+              },
+            },
+          }
+        }
+      });
     },
   },
 };
