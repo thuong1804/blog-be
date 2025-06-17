@@ -3,6 +3,7 @@ import postTypeDefs from './post.schema.js';
 import { userTypeDefs } from './user.schema.js';
 import { tagTypeDefs } from './tag.schema.js';
 import { commentTypeDefs } from './comment.schema.js';
+import { categoryDefs } from './category.schema.js';
 
 const baseTypeDefs = gql`
   type Query
@@ -15,6 +16,7 @@ const typeDefs = [
   userTypeDefs,
   tagTypeDefs,
   commentTypeDefs,
+  categoryDefs
 ];
 
 export default typeDefs

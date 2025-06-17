@@ -3,7 +3,7 @@ const { PrismaClient } = pkg;
 const prisma = new PrismaClient();
 
 async function main() {
-  // Tạo một user làm tác giả
+  // 1. Tạo author
   const author = await prisma.user.upsert({
     where: { email: 'techwriter@example.com' },
     update: {},
@@ -12,8 +12,9 @@ async function main() {
       email: 'techwriter@example.com',
     },
   });
+  console.log(author)
 
-  // Tạo tags
+  // 2. Tạo tags
   const tagNames = ['AI', 'VR', 'Blockchain', 'Cloud', 'DevOps', 'Cybersecurity'];
   await Promise.all(
     tagNames.map((name) =>
@@ -24,6 +25,86 @@ async function main() {
       })
     )
   );
+
+  const categoriesData = [
+    {
+      name: 'Programming',
+      description: 'All things about programming languages and concepts.',
+      children: [
+        { name: 'JavaScript', description: 'Scripting language for the web.' },
+        { name: 'TypeScript', description: 'Typed superset of JavaScript.' },
+        { name: 'Python', description: 'High-level language for automation and data.' },
+      ],
+    },
+    {
+      name: 'Emerging Tech',
+      description: 'New and disruptive technologies.',
+      children: [
+        { name: 'Artificial Intelligence', description: 'The simulation of human intelligence by machines.' },
+        { name: 'Virtual Reality', description: 'Immersive digital environments.' },
+        { name: 'Blockchain', description: 'Decentralized digital ledger technology.' },
+      ],
+    },
+    {
+      name: 'Infrastructure',
+      description: 'Everything about dev infrastructure and deployment.',
+      children: [
+        { name: 'Cloud', description: 'Modern cloud computing solutions.' },
+        { name: 'DevOps', description: 'Continuous delivery & collaboration practices.' },
+        { name: 'Kubernetes', description: 'Container orchestration system.' },
+      ],
+    },
+    {
+      name: 'AI & Data',
+      description: 'Topics covering artificial intelligence and data processing.',
+      children: [
+        { name: 'Machine Learning', description: 'Algorithms that learn from data.' },
+        { name: 'Deep Learning', description: 'Neural networks and advanced models.' },
+        { name: 'Data Science', description: 'Extracting insights from data.' },
+      ],
+    },
+    {
+      name: 'Web Development',
+      description: 'Building modern websites and web applications.',
+      children: [
+        { name: 'Frontend', description: 'UI/UX and browser-based development.' },
+        { name: 'Backend', description: 'Server-side logic and database interaction.' },
+        { name: 'Fullstack', description: 'Combining both frontend and backend skills.' },
+      ],
+    },
+    {
+      name: 'Cybersecurity',
+      description: 'Protecting systems and data from threats.',
+      children: [
+        { name: 'Network Security', description: 'Securing communication channels.' },
+        { name: 'Application Security', description: 'Securing software and code.' },
+        { name: 'Ethical Hacking', description: 'Simulated attacks to find weaknesses.' },
+      ],
+    },
+  ];
+
+  for (const parent of categoriesData) {
+    const createdParent = await prisma.category.upsert({
+      where: { name: parent.name },
+      update: { description: parent.description },
+      create: {
+        name: parent.name,
+        description: parent.description,
+      },
+    });
+
+    for (const child of parent.children) {
+      await prisma.category.upsert({
+        where: { name: child.name },
+        update: { description: child.description },
+        create: {
+          name: child.name,
+          description: child.description,
+          parentId: createdParent.id,
+        },
+      });
+    }
+  }
 
   const postsData = [
     {
@@ -89,28 +170,34 @@ async function main() {
   ];
 
   const commentTemplates = [
-    "Amazing insights. I learned something new!",
-    "Could you go deeper on this topic?",
-    "Thanks for the explanation, really helpful.",
-    "Nice article! Keep up the great work.",
-    "Interesting take. Would love more examples.",
-    "This clarified a lot of things for me.",
-    "Looking forward to more posts like this.",
-    "Great read. Helped me understand better.",
+    'Amazing insights. I learned something new!',
+    'Could you go deeper on this topic?',
+    'Thanks for the explanation, really helpful.',
+    'Nice article! Keep up the great work.',
+    'Interesting take. Would love more examples.',
+    'This clarified a lot of things for me.',
+    'Looking forward to more posts like this.',
+    'Great read. Helped me understand better.',
   ];
 
-  function getRandomComments() {
+  function getRandomComments(authorId) {
     const shuffled = [...commentTemplates].sort(() => 0.5 - Math.random());
     const count = Math.floor(Math.random() * 3) + 2; // 2 to 4 comments
     return shuffled.slice(0, count).map((content) => ({
       content,
-      author: {
-        connect: { id: author.id },
-      },
+      authorId,
     }));
   }
 
   for (const post of postsData) {
+    const category = await prisma.category.findUnique({
+      where: { name: post.category },
+    });
+
+    if (!category) {
+      throw new Error(`Category not found: ${post.category}`);
+    }
+
     const createdPost = await prisma.post.create({
       data: {
         title: post.title,
@@ -119,21 +206,27 @@ async function main() {
         description: post.description,
         excerpt: post.excerpt,
         image: post.image,
-        category: post.category,
+        category: {
+          connect: {
+            name: post.category,
+          },
+        },
         isFeatured: false,
         views: Math.floor(Math.random() * 1000),
         readingTime: Math.floor(Math.random() * 5) + 3,
-        authorId: author.id,
+        author: {
+          connect: { id: author.id },
+        },
         tags: {
           connect: post.tags.map((name) => ({ name })),
         },
         comments: {
-          create: getRandomComments(),
+          create: getRandomComments(author.id),
         },
       },
     });
 
-    console.log(`Created post: ${createdPost.title}`);
+    console.log(`✅ Created post: ${createdPost.title}`);
   }
 }
 
