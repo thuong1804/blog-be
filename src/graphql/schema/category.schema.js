@@ -7,5 +7,13 @@ export const categoryDefs = gql`
     description: String
     parent: Category
     children: [Category]
+    posts: [Post]
   }
+
+  type Query {
+    categories: [Category!]!
+    category(slug: String!): Category
+}
 `
+
+
