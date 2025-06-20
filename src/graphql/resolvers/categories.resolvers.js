@@ -17,5 +17,36 @@ export const categoryResolvers = {
         }
       });
     },
+    category: async (_parent, { slug }) => {
+      return await prisma.category.findUnique({
+        where: { slug },
+        include: {
+          posts: {
+            include: {
+              author: true,
+              tags: true,
+              category: true
+            }
+          },
+          parent: true,
+          children: {
+            include: {
+              posts: {
+                include: {
+                  author: true,
+                  tags: true,
+                  category: {
+                    include : {
+                      children: true,
+                      parent: true
+                    }
+                  }
+                }
+              },
+            }
+          },
+        }
+      });
+    }
   },
 };

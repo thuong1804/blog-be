@@ -3,7 +3,44 @@ const prisma = new PrismaClient();
 
 export const postResolvers = {
   Query: {
-    posts: async () => {
+    posts: async (_parent, args) => {
+      const { categorySlug  } = args;
+
+      if (categorySlug ) {
+        const parentCategory = await prisma.category.findUnique({
+          where: { name: categorySlug  },
+          include: { children: true },
+        });
+
+        if (!parentCategory) {
+          throw new Error(`Category not found: ${categorySlug }`);
+        }
+
+        const categoryIds = [
+          parentCategory.id,
+          ...parentCategory.children.map((child) => child.id),
+        ];
+
+        return await prisma.post.findMany({
+          where: {
+            categoryId: {
+              in: categoryIds,
+            },
+          },
+          include: {
+            tags: true,
+            author: true,
+            comments: true,
+            category: {
+              include: {
+                parent: true,
+                children: true,
+              },
+            },
+          },
+        });
+      }
+
       return await prisma.post.findMany({
         include: {
           tags: true,
@@ -11,16 +48,28 @@ export const postResolvers = {
           comments: true,
           category: {
             include: {
-              children: {
-                select: {
-                  id: true,
-                  name: true,
-                  description: true,
-                },
-              },
+              parent: true,
+              children: true,
             },
-          }
-        }
+          },
+        },
+      });
+    },
+
+    post: async (_parent, { slug }) => {
+      return await prisma.post.findUnique({
+        where: { slug },
+        include: {
+          tags: true,
+          author: true,
+          comments: true,
+          category: {
+            include: {
+              parent: true,
+              children: true,
+            },
+          },
+        },
       });
     },
   },
