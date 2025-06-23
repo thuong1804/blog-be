@@ -5,6 +5,7 @@ export const userTypeDefs = gql`
     id: Int!
     name: String!
     email: String!
+    avatar: String!
     posts: [Post!]!
   }
 `;

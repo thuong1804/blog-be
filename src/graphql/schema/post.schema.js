@@ -13,6 +13,7 @@ const postTypeDefs = gql`
     category: Category!
     tags: [Tag]
     views: Int
+    isPopular: Boolean!
     readingTime: Int
     isFeatured: Boolean!
     createdAt: String!
@@ -24,7 +25,9 @@ const postTypeDefs = gql`
 
   type Query {
     posts(categorySlug: String): [Post!]!
+    postsByTitle(search: String): [Post!]!
     post(slug: String!): Post
+    popularPosts: [Post!]
   }
 
   type Mutation {

@@ -11,6 +11,7 @@ model User {
   id        Int       @id @default(autoincrement())
   email     String    @unique
   name      String?
+  avatar    String?
   createdAt DateTime  @default(now())
   comments  Comment[]
   posts     Post[]
@@ -24,6 +25,7 @@ model Post {
   createdAt   DateTime  @default(now())
   authorId    Int
   description String
+  isPopular   Boolean   @default(false)
   image       String
   excerpt     String?
   isFeatured  Boolean   @default(false)

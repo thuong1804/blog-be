@@ -13,7 +13,22 @@ export const categoryResolvers = {
               category: true
             }
           },
-          children: true
+          children: {
+            include: {
+              posts: {
+                include: {
+                  author: true,
+                  tags: true,
+                  category: {
+                    include : {
+                      children: true,
+                      parent: true
+                    }
+                  }
+                }
+              },
+            }
+          }
         }
       });
     },
