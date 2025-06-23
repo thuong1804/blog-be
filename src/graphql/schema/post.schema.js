@@ -6,7 +6,7 @@ const postTypeDefs = gql`
     id: Int!
     title: String!
     slug: String!
-    content: String!
+    content: String! # Markdown content
     description: String!
     excerpt: String
     image: String!
@@ -23,7 +23,7 @@ const postTypeDefs = gql`
   }
 
   type Query {
-    posts: [Post!]!
+    posts(categorySlug: String): [Post!]!
     post(slug: String!): Post
   }
 
@@ -34,7 +34,7 @@ const postTypeDefs = gql`
       content: String!
       description: String!
       image: String!
-      category: String!
+      categoryId: Int!
       authorId: Int!
     ): Post!
   }

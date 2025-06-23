@@ -56,6 +56,7 @@ model Comment {
 model Category {
   id          Int        @id @default(autoincrement())
   name        String     @unique
+  slug        String     @unique
   description String?
   parentId    Int?
   parent      Category?  @relation("Subcategories", fields: [parentId], references: [id])
