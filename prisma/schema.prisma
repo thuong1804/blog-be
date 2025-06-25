@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,46 +8,60 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   name      String?
+  avatar    String?
+  createdAt DateTime  @default(now())
+  comments  Comment[]
   posts     Post[]
-  createdAt DateTime @default(now())
-  comments Comment[]
 }
 
 model Post {
-  id           Int       @id @default(autoincrement())
-  title        String
-  slug         String    @unique
-  content      String
-  description  String
-  excerpt      String?
-  image        String
-  category     String
-  isFeatured   Boolean   @default(false)
-  views        Int       @default(0)
-  readingTime  Int?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  author       User      @relation(fields: [authorId], references: [id])
-  authorId     Int
-  comments     Comment[]
-  tags         Tag[]
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  content     String
+  createdAt   DateTime  @default(now())
+  authorId    Int
+  description String
+  isPopular   Boolean   @default(false)
+  image       String
+  excerpt     String?
+  isFeatured  Boolean   @default(false)
+  readingTime Int?
+  updatedAt   DateTime  @updatedAt
+  views       Int       @default(0)
+  comments    Comment[]
+  author      User      @relation(fields: [authorId], references: [id])
+  tags        Tag[]     @relation("PostToTag")
+  categoryId  Int
+  category    Category  @relation(fields: [categoryId], references: [id])
 }
 
 model Tag {
   id    Int    @id @default(autoincrement())
   name  String @unique
-  posts Post[]
+  posts Post[] @relation("PostToTag")
 }
 
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
-  post      Post     @relation(fields: [postId], references: [id])
   postId    Int
-  author    User     @relation(fields: [authorId], references: [id])
   authorId  Int
   createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+}
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  parentId    Int?
+  parent      Category?  @relation("Subcategories", fields: [parentId], references: [id])
+  children    Category[] @relation("Subcategories")
+  posts       Post[]
 }

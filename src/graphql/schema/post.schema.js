@@ -6,25 +6,28 @@ const postTypeDefs = gql`
     id: Int!
     title: String!
     slug: String!
-    content: String!
+    content: String! # Markdown content
     description: String!
     excerpt: String
     image: String!
-    category: String!
-    tags: [Tag!]!
+    category: Category!
+    tags: [Tag]
     views: Int
+    isPopular: Boolean!
     readingTime: Int
     isFeatured: Boolean!
     createdAt: String!
     updatedAt: String!
     author: User!
     authorId: Int!
-    comments: [Comment!]!
+    comments: [Comment]
   }
 
   type Query {
-    posts: [Post!]!
+    posts(categorySlug: String): [Post!]!
+    postsByTitle(search: String): [Post!]!
     post(slug: String!): Post
+    popularPosts: [Post!]
   }
 
   type Mutation {
@@ -34,7 +37,7 @@ const postTypeDefs = gql`
       content: String!
       description: String!
       image: String!
-      category: String!
+      categoryId: Int!
       authorId: Int!
     ): Post!
   }
