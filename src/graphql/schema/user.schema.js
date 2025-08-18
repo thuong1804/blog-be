@@ -5,12 +5,14 @@ export const userTypeDefs = gql`
     id: Int!
     name: String!
     handle: String!
+    description: String
     email: String!
     avatar: String!
     posts: [Post!]!
   }
 
   type Query {
-      userByPosts(handle: String!): User
-    }
+    userByPosts(handle: String!): User
+    users: [User!]!
+  }
 `;
