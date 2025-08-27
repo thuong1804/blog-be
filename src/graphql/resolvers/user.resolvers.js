@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+import 'dotenv/config'
 
 export const userResolvers = {
   Query: {
@@ -27,7 +28,6 @@ export const userResolvers = {
         throw new Error("Failed to fetch user by handle");
       }
     },
-
     users: async () => {
       try {
         return await prisma.user.findMany({
@@ -51,5 +51,29 @@ export const userResolvers = {
         throw new Error("Failed to fetch users");
       }
     },
-  },
+    userDetail: async (_, {id}) => {
+      try {
+        return await prisma.user.findUnique({
+          where: { id: id },
+          include: {
+            posts: {
+              include: {
+                author: true,
+                tags: true,
+                category: {
+                  include: {
+                    children: true,
+                    parent: true
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        throw new Error("Failed to fetch users");
+      }
+    },
+  }
 };
