@@ -9,10 +9,12 @@ export const userTypeDefs = gql`
     email: String!
     avatar: String!
     posts: [Post!]!
+    accounts: [OAuthAccount!]!
   }
 
   type Query {
     userByPosts(handle: String!): User
     users: [User!]!
+    userDetail(id: Int!): User
   }
 `;

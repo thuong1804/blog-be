@@ -2,6 +2,7 @@ import { categoryResolvers } from './categories.resolvers.js';
 import { postResolvers } from './post.resolver.js';
 import { userResolvers } from './user.resolvers.js';
 import { sendMailResolvers } from './sendMail.resolvers.js';
+import { authResolvers } from './auth.resolvers.js';
 
 const resolvers = {
   Query: {
@@ -11,6 +12,7 @@ const resolvers = {
   },
   Mutation: {
     ...sendMailResolvers.Mutation,
+    ...authResolvers.Mutation
   },
 };
 

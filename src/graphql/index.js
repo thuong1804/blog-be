@@ -4,9 +4,16 @@ import typeDefs from './schema/index.schema.js';
 import resolvers from './resolvers/resolvers.js';
 
 const apolloServer = new ApolloServer({
-  typeDefs,
-  resolvers,
+    typeDefs,
+    resolvers,
+    context: ({ req }) => {
+        const authHeader = req.headers.authorization || "";
+        const user = getUserFromToken(authHeader);
+
+        return { user };
+    },
 });
+
 
 
 export default apolloServer;

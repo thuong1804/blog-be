@@ -5,6 +5,9 @@ import { tagTypeDefs } from './tag.schema.js';
 import { commentTypeDefs } from './comment.schema.js';
 import { categoryDefs } from './category.schema.js';
 import { sendMailTypeDefs } from './sendMail.schema.js';
+import { oAuthAccountTypeDefs } from './oAuthAccount.schema.js';
+import { authTypeDefs } from './authTypeDefs.schema.js';
+
 
 const baseTypeDefs = gql`
   type Query
@@ -18,7 +21,9 @@ const typeDefs = [
   tagTypeDefs,
   commentTypeDefs,
   categoryDefs,
-  sendMailTypeDefs
+  sendMailTypeDefs,
+  oAuthAccountTypeDefs,
+  authTypeDefs,
 ];
 
 export default typeDefs
