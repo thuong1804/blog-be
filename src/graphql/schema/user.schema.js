@@ -17,4 +17,8 @@ export const userTypeDefs = gql`
     users: [User!]!
     userDetail(id: Int!): User
   }
+
+  type Mutation {
+    updateUserDetail(id: Int!, name: String, handle: String, description: String, avatar: String): User!
+  }
 `;
