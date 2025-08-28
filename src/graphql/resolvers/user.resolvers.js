@@ -75,5 +75,26 @@ export const userResolvers = {
         throw new Error("Failed to fetch users");
       }
     },
+  },
+  Mutation: {
+    updateUserDetail: async (_, args) => {
+      const { id, name, avatar, description, handle } = args;
+
+      try {
+        const userUpdate = await prisma.user.update({
+          where: { id },
+          data: {
+            ...(name && { name }),
+            ...(handle && { handle }),
+            ...(description && { description }),
+            ...(avatar && { avatar }),
+          },
+        });
+        return userUpdate;
+      } catch (err) {
+        console.error("Update user error:", err);
+        throw new Error("Failed to update user details");
+      }
+    },
   }
 };

@@ -9,10 +9,11 @@ import multer from 'multer';
 import { expressMiddleware } from '@apollo/server/express4';
 
 cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET,
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
 });
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -20,7 +21,12 @@ const app = express();
 
 app.use(express.static('public'));
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5000"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -33,7 +39,10 @@ app.use((req, res, next) => {
 await apolloServer.start();
 
 app.use('/graphql', expressMiddleware(apolloServer, {
-  context: async ({ req, res }) => ({ req, res })
-}));
+    context: async ({ req }) => {
+      const token = req.headers.authorization || "";
+      return { token };
+    },
+  }));
 
 export default app;

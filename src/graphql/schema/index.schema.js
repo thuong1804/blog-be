@@ -7,7 +7,7 @@ import { categoryDefs } from './category.schema.js';
 import { sendMailTypeDefs } from './sendMail.schema.js';
 import { oAuthAccountTypeDefs } from './oAuthAccount.schema.js';
 import { authTypeDefs } from './authTypeDefs.schema.js';
-
+import { cloudinaryTypeDefs } from './cloudinaryTypeDefs.schema.js';
 
 const baseTypeDefs = gql`
   type Query
@@ -24,6 +24,7 @@ const typeDefs = [
   sendMailTypeDefs,
   oAuthAccountTypeDefs,
   authTypeDefs,
+  cloudinaryTypeDefs
 ];
 
 export default typeDefs
