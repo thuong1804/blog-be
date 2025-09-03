@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 const prisma = new PrismaClient();
 import 'dotenv/config'
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../middleware/auth.js';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -20,18 +21,22 @@ export const authResolvers = {
           throw new Error("User not found");
         }
 
+        const provider = await prisma.oAuthAccount.findUnique({ where: {
+          provider_providerAccountId: {
+            provider: "credentials",
+            providerAccountId: email,
+          },
+        }});
+
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
           throw new Error("Invalid password");
         }
 
-        const token = jwt.sign(
-          { userId: user.id, email: user.email },
-          process.env.ACCESS_TOKEN_SECRET,
-          { expiresIn: "15m" }
-        );
+        const token = generateAccessToken({ userId: user.id, email: user.email, provider: provider.provider })
+        const refreshToken = generateRefreshToken({ userId: user.id})
 
-        return { token, user };
+        return { token, refreshToken, user };
       } catch (error) {
         console.error("Login error:", error);
         throw new Error(error.message || "Login failed");
@@ -62,6 +67,14 @@ export const authResolvers = {
           password: hashedPassword,
           name,
           handle: finalHandle,
+        },
+      });
+
+      await prisma.oAuthAccount.create({
+        data: {
+          provider: "credentials",
+          providerAccountId: email,
+          userId: user.id,
         },
       });
 
@@ -124,11 +137,93 @@ export const authResolvers = {
         });
       }
 
-      const token = jwt.sign({ userId: user.id }, process.env.ACCESS_TOKEN_SECRET, {
+      const token = jwt.sign({ userId: user.id, provider: account.provider}, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "7d",
       });
 
       return { user, token };
+    },
+    changePassword: async (_, { id, password }) => {
+      try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await prisma.user.update({
+          where: { id },
+          data: { password: hashedPassword },
+        });
+
+        return {
+          success: true,
+          message: "Change password success",
+        };
+      } catch (err) {
+        console.error("Update user error:", err);
+        return {
+          success: false,
+          message: "Failed to update user details",
+        };
+      }
+    },
+    validatePassword: async (_, { id, password }) => {
+      try {
+        if (!id || !password) {
+          return {
+            success: false,
+            message: "User ID and password are required",
+          };
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { id },
+          select: { password: true },
+        });
+
+        if (!user) {
+          return {
+            success: false,
+            message: "User not found",
+          };
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+          return {
+            success: false,
+            message: "Invalid password",
+          };
+        }
+
+        return {
+          success: true,
+          message: "Password is correct",
+        };
+      } catch (err) {
+        console.error("Error validating password:", err);
+        return {
+          success: false,
+          message: "An error occurred while validating the password",
+        };
+      }
+    },
+    refreshToken: async (_, { refreshToken }) => {
+      try {
+        const decoded = verifyRefreshToken(refreshToken)
+
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+        });
+
+        if (!user) throw new Error("User not found");
+
+        const newAccessToken = generateRefreshToken(user);
+
+        return {
+          token: newAccessToken,
+          user,
+        };
+      } catch (err) {
+        throw new Error("Invalid refresh token");
+      }
     }
   }
 }
