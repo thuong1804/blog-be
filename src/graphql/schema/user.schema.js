@@ -7,7 +7,8 @@ export const userTypeDefs = gql`
     handle: String!
     description: String
     email: String!
-    avatar: String!
+    avatar: String
+    avatarPublicId: String
     posts: [Post!]!
     accounts: [OAuthAccount!]!
   }

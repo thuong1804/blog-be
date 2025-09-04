@@ -9,10 +9,22 @@ export const cloudinaryTypeDefs = gql`
     folder: String
   }
 
+  type UpdateUserResponse {
+    result: Boolean!
+    user: User!
+    message: String!
+  }
+
+  type DeleteImageResponse {
+    result: String
+    message: String!
+  }
+
   type Mutation {
     getUploadSignature(folder: String): CloudinarySignature!
-    updatePostImage(postId: Int!, image: String!): Post!
-    updateAvatarUser(userId: Int!, image: String!): User!
+    updatePostImage(postId: Int!, image: String!, publicId: String!): Post!
+    updateAvatarUser(userId: Int!, image: String!, publicId: String!): UpdateUserResponse!
+    deleteAvatar(publicId: String!, userId: Int!): DeleteImageResponse!
   }
 
   type Query {

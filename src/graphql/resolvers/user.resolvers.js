@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+import bcrypt from "bcrypt";
 import 'dotenv/config'
 
 export const userResolvers = {
@@ -43,7 +44,8 @@ export const userResolvers = {
                   }
                 }
               }
-            }
+            },
+            accounts: true
           }
         });
       } catch (error) {
@@ -51,7 +53,7 @@ export const userResolvers = {
         throw new Error("Failed to fetch users");
       }
     },
-    userDetail: async (_, {id}) => {
+    userDetail: async (_, { id }) => {
       try {
         return await prisma.user.findUnique({
           where: { id: id },
@@ -67,7 +69,8 @@ export const userResolvers = {
                   }
                 }
               }
-            }
+            },
+            accounts: true
           }
         });
       } catch (error) {

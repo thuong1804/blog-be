@@ -10,6 +10,7 @@ const postTypeDefs = gql`
     description: String!
     excerpt: String
     image: String!
+    imagePublicId: String!
     category: Category!
     tags: [Tag]
     views: Int
