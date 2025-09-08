@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import { OAuth2Client } from "google-auth-library";
+import 'dotenv/config'
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../middleware/auth.js';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 const prisma = new PrismaClient();
-import 'dotenv/config'
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../middleware/auth.js';
+const { TokenExpiredError } = jwt;
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -21,12 +22,14 @@ export const authResolvers = {
           throw new Error("User not found");
         }
 
-        const provider = await prisma.oAuthAccount.findUnique({ where: {
-          provider_providerAccountId: {
-            provider: "credentials",
-            providerAccountId: email,
-          },
-        }});
+        const provider = await prisma.oAuthAccount.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: "credentials",
+              providerAccountId: email,
+            },
+          }
+        });
 
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
@@ -34,7 +37,7 @@ export const authResolvers = {
         }
 
         const token = generateAccessToken({ userId: user.id, email: user.email, provider: provider.provider })
-        const refreshToken = generateRefreshToken({ userId: user.id})
+        const refreshToken = generateRefreshToken({ userId: user.id })
 
         return { token, refreshToken, user };
       } catch (error) {
@@ -79,7 +82,7 @@ export const authResolvers = {
       });
 
       const token = jwt.sign(
-        { userId: user.id,},
+        { userId: user.id, },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: "7d" }
       );
@@ -137,17 +140,17 @@ export const authResolvers = {
         });
       }
 
-      const token = jwt.sign({ userId: user.id, provider: account.provider}, process.env.ACCESS_TOKEN_SECRET, {
+      const token = jwt.sign({ userId: user.id, provider: account.provider }, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "7d",
       });
 
       return { user, token };
     },
-    changePassword: async (_, { id, password }) => {
+    changePassword: async (_, { email, password }) => {
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
         await prisma.user.update({
-          where: { id },
+          where: { email },
           data: { password: hashedPassword },
         });
 
@@ -163,17 +166,42 @@ export const authResolvers = {
         };
       }
     },
-    validatePassword: async (_, { id, password }) => {
+    resetPassword: async (_, { token, newPassword }) => {
       try {
-        if (!id || !password) {
+        const decoded = jwt.verify(token, process.env.RESET_SECRET);
+
+        if (!decoded || typeof decoded !== "object" || !("email" in decoded)) {
+          return { success: false, message: "Invalid or expired token" };
+        }
+
+        const email = decoded.email;
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await prisma.user.update({
+          where: { email },
+          data: { password: hashedPassword },
+        });
+
+        return { success: true, message: "Password reset success" };
+      } catch (err) {
+        if (err instanceof TokenExpiredError) {
+          return { success: false, message: "Token expired" };
+        }
+        console.error("Reset password error:", err);
+        return { success: false, message: "Failed to reset password" };
+      }
+    },
+    validatePassword: async (_, { email, password }) => {
+      try {
+        if (!email || !password) {
           return {
             success: false,
-            message: "User ID and password are required",
+            message: "Email and password are required",
           };
         }
 
         const user = await prisma.user.findUnique({
-          where: { id },
+          where: { email },
           select: { password: true },
         });
 
@@ -222,8 +250,8 @@ export const authResolvers = {
           user,
         };
       } catch (err) {
-        throw new Error("Invalid refresh token");
+        throw new Error("Refresh token expired or invalid");
       }
-    }
+    },
   }
 }
