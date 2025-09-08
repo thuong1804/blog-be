@@ -8,6 +8,7 @@ import { sendMailTypeDefs } from './sendMail.schema.js';
 import { oAuthAccountTypeDefs } from './oAuthAccount.schema.js';
 import { authTypeDefs } from './authTypeDefs.schema.js';
 import { cloudinaryTypeDefs } from './cloudinaryTypeDefs.schema.js';
+import { otpTypeDefs } from './otp.schema.js';
 
 const baseTypeDefs = gql`
   type Query
@@ -23,6 +24,7 @@ const typeDefs = [
   categoryDefs,
   sendMailTypeDefs,
   oAuthAccountTypeDefs,
+  otpTypeDefs,
   authTypeDefs,
   cloudinaryTypeDefs
 ];

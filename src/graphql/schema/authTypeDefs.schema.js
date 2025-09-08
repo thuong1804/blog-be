@@ -7,7 +7,7 @@ export const authTypeDefs = gql`
     user: User!
   }
 
-  type ChangePasswordResponse {
+  type ResultResponse {
     success: Boolean!
     message: String!
   }
@@ -16,8 +16,9 @@ export const authTypeDefs = gql`
     login(email: String!, password: String!): AuthPayload!
     signup(email: String!, password: String!, name: String, handle: String): AuthPayload!
     loginWithGoogle(idToken: String!): AuthPayload!
-    validatePassword(id: Int!, password: String): ChangePasswordResponse!
-    changePassword(id: Int!, password: String): ChangePasswordResponse!
+    validatePassword(email: String!, password: String): ResultResponse!
+    changePassword(email: String!, password: String): ResultResponse!
     refreshToken(refreshToken: String!): AuthPayload!
+    resetPassword(token: String!, newPassword: String!): ResultResponse!
   }
 `;

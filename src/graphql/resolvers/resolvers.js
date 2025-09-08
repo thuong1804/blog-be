@@ -4,6 +4,7 @@ import { userResolvers } from './user.resolvers.js';
 import { sendMailResolvers } from './sendMail.resolvers.js';
 import { authResolvers } from './auth.resolvers.js';
 import { cloudinaryResolvers } from './cloudinary.resolvers.js';
+import { OTPResolvers } from './otp.resolvers.js';
 
 const resolvers = {
   Query: {
@@ -17,6 +18,7 @@ const resolvers = {
     ...authResolvers.Mutation,
     ...cloudinaryResolvers.Mutation,
     ...userResolvers.Mutation,
+    ...OTPResolvers.Mutation,
   },
 };
 
