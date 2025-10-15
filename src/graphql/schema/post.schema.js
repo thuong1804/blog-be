@@ -31,16 +31,23 @@ const postTypeDefs = gql`
     popularPosts: [Post!]
   }
 
+  type PostResponse {
+    success: Boolean!
+    message: String
+  }
+
   type Mutation {
     createPost(
       title: String!
-      slug: String!
       content: String!
       description: String!
+      excerpt: String
       image: String!
       categoryId: Int!
       authorId: Int!
+      tagIds: [Int!]!
     ): Post!
+    deletePost(postId: Int!, userId: Int!): PostResponse!
   }
 `;
 

@@ -6,4 +6,8 @@ export const tagTypeDefs = gql`
     name: String!
     posts: [Post!]!
   }
+
+  type Query {
+    getTags: [Tag!]!
+  }
 `;

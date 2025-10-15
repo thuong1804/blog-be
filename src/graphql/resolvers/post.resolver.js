@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { checkRequiredField, formatSlug } from '../../utils/index.js';
+import { NodeHtmlMarkdown } from 'node-html-markdown';
 const prisma = new PrismaClient();
 
 export const postResolvers = {
@@ -55,7 +57,6 @@ export const postResolvers = {
         },
       });
     },
-
     post: async (_parent, { slug }) => {
       return await prisma.post.findUnique({
         where: { slug },
@@ -87,7 +88,7 @@ export const postResolvers = {
         }
       });
     },
-    postsByTitle: async (_parent, {search}) => {
+    postsByTitle: async (_parent, { search }) => {
       return await prisma.post.findMany({
         where: {
           title: {
@@ -108,4 +109,66 @@ export const postResolvers = {
       });
     }
   },
+  Mutation: {
+    createPost: async (_, args) => {
+      const {
+        title,
+        content,
+        description,
+        excerpt,
+        image,
+        categoryId,
+        authorId,
+        tagIds
+      } = args;
+      try {
+        checkRequiredField(args)
+
+        const markdownContent = NodeHtmlMarkdown.translate(content);
+
+        const post = await prisma.post.create({
+          data: {
+            title,
+            slug: formatSlug(title),
+            content: markdownContent,
+            description,
+            excerpt,
+            image,
+            categoryId,
+            authorId,
+            tags: {
+              connect: tagIds.map((id) => ({ id }))
+            }
+          },
+          include: {
+            tags: true,
+            category: true,
+            author: true
+          }
+        });
+
+        return post;
+      } catch (error) {
+        console.error(error);
+        throw new Error("Create post failed!");
+      }
+    },
+    deletePost: async (_, args) => {
+      const { postId, userId } = args
+      try {
+        checkRequiredField({ args })
+
+        await prisma.post.delete({
+          data: {
+            id: postId,
+            authorId: userId
+          }
+        })
+        return { success: true, message: "Delete post message" };
+      } catch (error) {
+        console.error(error);
+        throw new Error("Delete post failed!");
+      }
+    }
+  }
 };
