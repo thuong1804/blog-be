@@ -29,6 +29,7 @@ const postTypeDefs = gql`
     postsByTitle(search: String): [Post!]!
     post(slug: String!): Post
     popularPosts: [Post!]
+    postsLatest(skip: Int = 0, take: Int = 6): [Post!]
   }
 
   type PostResponse {

@@ -107,7 +107,26 @@ export const postResolvers = {
           tags: true,
         },
       });
-    }
+    },
+    postsLatest: async (_parent, { skip = 0, take = 6 }) => {
+      return await prisma.post.findMany({
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take,
+        skip,
+        include: {
+          author: true,
+          category: {
+            include: {
+              parent: true,
+              children: true,
+            },
+          },
+          tags: true,
+        },
+      });
+    },
   },
   Mutation: {
     createPost: async (_, args) => {
