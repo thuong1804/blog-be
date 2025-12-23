@@ -5,39 +5,47 @@ Deep Learning, a subset of machine learning, leverages neural networks with mult
 ![Neural Networks](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234720/neu_ycxzik.png)
 
 ## What is Deep Learning?
+
 Deep Learning uses neural networks with many layers (hence "deep") to learn hierarchical feature representations from raw data. Unlike traditional machine learning, which relies heavily on feature engineering, deep learning automatically extracts relevant features, making it ideal for tasks like computer vision and speech recognition.
 
 Key characteristics:
+
 - **Layered Architecture**: Comprises input, hidden, and output layers.
 - **Non-linear Transformations**: Uses activation functions to model complex relationships.
 - **Scalability**: Performs better with large datasets and computational power.
 
 ## Neural Network Basics
+
 - **Neuron**: A computational unit that processes input, applies weights, adds bias, and passes the result through an activation function (e.g., ReLU, sigmoid).
-- **Layers**: 
-  - **Input Layer**: Receives raw data.
-  - **Hidden Layers**: Extract features through transformations.
-  - **Output Layer**: Produces final predictions.
+- **Layers**:
+    - **Input Layer**: Receives raw data.
+    - **Hidden Layers**: Extract features through transformations.
+    - **Output Layer**: Produces final predictions.
 - **Backpropagation**: Optimizes weights by minimizing a loss function using gradient descent.
 - **Loss Function**: Measures prediction error (e.g., mean squared error for regression, cross-entropy for classification).
 - **Optimizer**: Adjusts weights to minimize loss (e.g., Adam, SGD).
 
 ## Common Deep Learning Architectures
+
 - **Feedforward Neural Networks**: Basic architecture for general tasks.
 - **Convolutional Neural Networks (CNNs)**: Excel in image processing.
 - **Recurrent Neural Networks (RNNs)**: Handle sequential data like time series or text.
 - **Transformers**: Power modern NLP models like BERT and GPT.
 
 ## Building a Neural Network with TensorFlow
+
 Let’s create a simple neural network to classify handwritten digits using the MNIST dataset, a classic deep learning benchmark.
 
 ### Step 1: Set Up the Environment
+
 Install Python and required libraries:
+
 ```bash
 pip install tensorflow numpy matplotlib
 ```
 
 ### Step 2: Write the Deep Learning Code
+
 Create a file named `mnist_classifier.py` with the following code:
 
 ```python
@@ -88,12 +96,15 @@ plt.show()
 ```
 
 ### Step 3: Run the Code
+
 Execute the script:
+
 ```bash
 python mnist_classifier.py
 ```
 
 **Expected Output**:
+
 ```
 ...
 Epoch 5/5
@@ -107,6 +118,7 @@ Predicted Digit: 7
 A plot will display training and validation accuracy over epochs.
 
 ### Explanation
+
 - **Dataset**: MNIST contains 60,000 training and 10,000 test images of handwritten digits (28x28 pixels).
 - **Model**: A feedforward neural network with two hidden layers (128 and 64 neurons) and a softmax output layer for 10 classes.
 - **Training**: The model trains for 5 epochs, optimizing cross-entropy loss with the Adam optimizer.
@@ -114,6 +126,7 @@ A plot will display training and validation accuracy over epochs.
 - **Prediction**: The model predicts the digit for a sample image.
 
 ## Best Practices for Deep Learning
+
 - **Data Preprocessing**: Normalize inputs and augment data to improve generalization.
 - **Regularization**: Use dropout or L2 regularization to prevent overfitting.
 - **Hyperparameter Tuning**: Experiment with learning rates, batch sizes, and layer sizes.
@@ -121,4 +134,5 @@ A plot will display training and validation accuracy over epochs.
 - **Hardware Acceleration**: Leverage GPUs or TPUs for faster training.
 
 ## Conclusion
+
 Deep Learning with neural networks unlocks the ability to solve complex problems by learning intricate patterns from data. The MNIST example demonstrates a basic neural network, but deep learning extends to advanced applications like autonomous driving and language translation. Start exploring TensorFlow or PyTorch to build your own intelligent systems!

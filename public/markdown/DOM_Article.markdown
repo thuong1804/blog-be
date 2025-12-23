@@ -26,13 +26,13 @@ For example, given this HTML:
 ```html
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>My DOM Example</title>
-  </head>
-  <body>
-    <h1>Hello World</h1>
-    <p>This is a paragraph.</p>
-  </body>
+    <head>
+        <title>My DOM Example</title>
+    </head>
+    <body>
+        <h1>Hello World</h1>
+        <p>This is a paragraph.</p>
+    </body>
 </html>
 ```
 
@@ -97,8 +97,8 @@ The DOM also allows developers to handle events like **clicks, key presses, and 
 Example:
 
 ```javascript
-document.getElementById("myButton").addEventListener("click", function() {
-  alert("Button clicked!");
+document.getElementById("myButton").addEventListener("click", function () {
+    alert("Button clicked!");
 });
 ```
 
@@ -121,6 +121,7 @@ The DOM is at the **heart of web development**. Understanding it is essential fo
 
 ---
 
-📖 *Further Reading:*  
-- [MDN Web Docs - DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model)  
+📖 _Further Reading:_
+
+- [MDN Web Docs - DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model)
 - [W3Schools DOM Tutorial](https://www.w3schools.com/js/js_htmldom.asp)

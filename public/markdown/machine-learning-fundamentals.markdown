@@ -5,14 +5,17 @@ Machine Learning (ML) is a cornerstone of artificial intelligence, enabling syst
 ![Machine Learning](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234674/mar_h7ebym.jpg)
 
 ## What is Machine Learning?
+
 Machine Learning is a subset of AI that focuses on developing algorithms that allow computers to learn patterns from data and improve over time. Unlike traditional programming, where rules are hardcoded, ML models infer rules from examples.
 
 Key types of ML:
+
 - **Supervised Learning**: Uses labeled data to predict outcomes (e.g., regression, classification).
 - **Unsupervised Learning**: Finds patterns in unlabeled data (e.g., clustering, dimensionality reduction).
 - **Reinforcement Learning**: Learns by interacting with an environment to maximize rewards.
 
 ## Core Concepts
+
 - **Features**: Input variables used to make predictions (e.g., pixel values in an image).
 - **Labels**: Target outputs in supervised learning (e.g., “cat” or “dog”).
 - **Training**: Process of feeding data to an algorithm to learn patterns.
@@ -20,6 +23,7 @@ Key types of ML:
 - **Overfitting**: When a model learns noise in training data, reducing generalization.
 
 ## Common Algorithms
+
 - **Linear Regression**: Predicts continuous values (e.g., house prices).
 - **Logistic Regression**: Classifies binary outcomes (e.g., spam vs. non-spam).
 - **Decision Trees**: Makes decisions by splitting data into branches.
@@ -27,15 +31,19 @@ Key types of ML:
 - **Neural Networks**: Mimics human brains for complex tasks like image recognition.
 
 ## Building a Simple ML Model with Python
+
 Let’s create a basic classification model using scikit-learn to predict iris species based on flower measurements.
 
 ### Step 1: Set Up the Environment
+
 Install Python and required libraries:
+
 ```bash
 pip install scikit-learn pandas numpy
 ```
 
 ### Step 2: Write the ML Code
+
 Create a file named `iris_classifier.py` with the following code:
 
 ```python
@@ -73,12 +81,15 @@ print(f"\nPredicted species for sample: {iris.target_names[prediction[0]]}")
 ```
 
 ### Step 3: Run the Code
+
 Execute the script:
+
 ```bash
 python iris_classifier.py
 ```
 
 **Expected Output**:
+
 ```
 Accuracy: 1.00
 
@@ -95,6 +106,7 @@ Predicted species for sample: setosa
 ```
 
 ### Explanation
+
 - **Dataset**: The Iris dataset contains 150 samples with four features and three species (setosa, versicolor, virginica).
 - **Model**: Logistic Regression is used for multi-class classification.
 - **Training**: 80% of data trains the model; 20% tests it.
@@ -102,6 +114,7 @@ Predicted species for sample: setosa
 - **Prediction**: The model predicts the species for a sample input.
 
 ## Best Practices for Machine Learning
+
 - **Data Preprocessing**: Clean, normalize, and handle missing data to improve model performance.
 - **Feature Engineering**: Select or create meaningful features to enhance predictions.
 - **Cross-Validation**: Use k-fold cross-validation to ensure robust evaluation.
@@ -109,4 +122,5 @@ Predicted species for sample: setosa
 - **Monitoring**: Track model performance in production to detect drift.
 
 ## Conclusion
+
 Machine Learning fundamentals provide the foundation for building intelligent systems that learn from data. The Iris classification example demonstrates a simple supervised learning workflow, but ML extends to complex applications like natural language processing and computer vision. Start experimenting with scikit-learn or TensorFlow to unlock the power of ML in your projects!

@@ -1,13 +1,13 @@
-import { gql } from 'graphql-tag';
+import { gql } from "graphql-tag";
 
 export const tagTypeDefs = gql`
-  type Tag {
-    id: Int!
-    name: String!
-    posts: [Post!]!
-  }
+    type Tag {
+        id: Int!
+        name: String!
+        posts: [Post!]!
+    }
 
-  type Query {
-    getTags: [Tag!]!
-  }
+    type Query {
+        getTags: [Tag!]!
+    }
 `;

@@ -1,7 +1,7 @@
 // src/graphql/index.js
-import { ApolloServer } from '@apollo/server';
-import typeDefs from './schema/index.schema.js';
-import resolvers from './resolvers/resolvers.js';
+import { ApolloServer } from "@apollo/server";
+import typeDefs from "./schema/index.schema.js";
+import resolvers from "./resolvers/resolvers.js";
 
 const apolloServer = new ApolloServer({
     typeDefs,
@@ -13,7 +13,5 @@ const apolloServer = new ApolloServer({
         return { user };
     },
 });
-
-
 
 export default apolloServer;
