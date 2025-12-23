@@ -5,9 +5,11 @@ Data Science combines statistics, programming, and domain knowledge to extract m
 ![Python Data Science](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234769/python-la-gi-1_cibk9b.jpg)
 
 ## What is Data Science?
+
 Data Science is the process of collecting, cleaning, analyzing, and interpreting data to solve problems or make informed decisions. It spans industries, from finance to healthcare, and involves techniques like statistical modeling, machine learning, and data visualization.
 
 Key components:
+
 - **Data Collection**: Gathering raw data from sources like databases or APIs.
 - **Data Cleaning**: Handling missing values, outliers, and inconsistencies.
 - **Exploratory Data Analysis (EDA)**: Identifying patterns and trends.
@@ -15,6 +17,7 @@ Key components:
 - **Communication**: Presenting insights through reports or visualizations.
 
 ## Essential Python Libraries
+
 - **Pandas**: For data manipulation and analysis.
 - **NumPy**: For numerical computations.
 - **Matplotlib/Seaborn**: For data visualization.
@@ -22,10 +25,13 @@ Key components:
 - **Jupyter Notebook**: For interactive coding and visualization.
 
 ## Analyzing a Dataset with Python
+
 Let’s analyze the Titanic dataset to explore passenger survival patterns using Python, Pandas, and Seaborn.
 
 ### Step 1: Set Up the Environment
+
 Install required libraries:
+
 ```bash
 pip install pandas numpy matplotlib seaborn scikit-learn
 ```
@@ -33,6 +39,7 @@ pip install pandas numpy matplotlib seaborn scikit-learn
 Download the Titanic dataset from [Kaggle](https://www.kaggle.com/c/titanic/data) or use a public source like `seaborn`’s built-in dataset.
 
 ### Step 2: Write the Data Science Code
+
 Create a file named `titanic_analysis.py` with the following code:
 
 ```python
@@ -79,12 +86,15 @@ print(f"\nRule-based Prediction Accuracy: {accuracy:.2f}")
 ```
 
 ### Step 3: Run the Code
+
 Execute the script:
+
 ```bash
 python titanic_analysis.py
 ```
 
 **Expected Output**:
+
 ```
 Dataset Info:
 <class 'pandas.core.frame.DataFrame'>
@@ -108,10 +118,12 @@ Rule-based Prediction Accuracy: 0.79
 ```
 
 The script generates two plots:
+
 1. A count plot showing survival by passenger class and gender.
 2. A heatmap of correlations between numeric variables.
 
 ### Explanation
+
 - **Dataset**: The Titanic dataset includes passenger details like age, sex, class, and survival status.
 - **Cleaning**: Missing age values are filled with the median, and the `deck` column is dropped due to excessive missing data.
 - **EDA**: Survival rates are computed by class, and visualizations reveal patterns (e.g., females in higher classes had higher survival rates).
@@ -119,6 +131,7 @@ The script generates two plots:
 - **Visualization**: Seaborn plots communicate findings effectively.
 
 ## Best Practices for Data Science
+
 - **Reproducible Workflows**: Use Jupyter Notebooks or scripts with version control.
 - **Data Quality**: Validate and clean data thoroughly before analysis.
 - **Clear Visualizations**: Ensure plots are readable and convey insights.
@@ -126,4 +139,5 @@ The script generates two plots:
 - **Documentation**: Comment code and document assumptions for collaboration.
 
 ## Conclusion
+
 Data Science with Python empowers professionals to uncover actionable insights from data. The Titanic analysis example showcases data cleaning, EDA, and visualization, but Python’s capabilities extend to advanced machine learning and big data processing. Start exploring Pandas, Seaborn, and scikit-learn to dive into the world of data science!

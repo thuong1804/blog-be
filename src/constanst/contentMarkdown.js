@@ -1,8 +1,7 @@
-
 export const contentMarkDown = [
-  {
-    slug: 'scaling-kubernetes',
-    content: `
+    {
+        slug: "scaling-kubernetes",
+        content: `
     # 🚀 Scaling with Kubernetes
 
 ![Scaling with Kubernetes](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234616/what-is-kubernetes_ejpsjg.png)
@@ -54,11 +53,11 @@ Scaling with Kubernetes is a core factor in building modern, efficient, and flex
 ---
 
 💡 *Tip:* Use monitoring tools like **Prometheus + Grafana** to observe and fine-tune your scaling strategies in real time.
-    `
-  },
-  {
-    slug: 'machine-learning-fundamentals',
-    content: `
+    `,
+    },
+    {
+        slug: "machine-learning-fundamentals",
+        content: `
     # 🤖 Machine Learning Fundamentals
 
 ![Machine Learning](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234674/mar_h7ebym.jpg)
@@ -124,11 +123,11 @@ Understanding the fundamentals of Machine Learning is crucial in today's data-dr
 ---
 
 💡 *Tip:* Tools like **scikit-learn**, **TensorFlow**, and **PyTorch** are great for hands-on learning and experimentation.
-    `
-  },
-  {
-    slug: 'deep-learning-neural-networks',
-    content: `
+    `,
+    },
+    {
+        slug: "deep-learning-neural-networks",
+        content: `
     # 🧠 Deep Learning with Neural Networks
 
 ![Deep Learning Neural Network](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234720/neu_ycxzik.png)
@@ -203,11 +202,11 @@ Deep Learning has revolutionized the AI landscape with its ability to learn from
 ---
 
 💡 *Tip:* Begin with small neural networks and datasets (like MNIST or CIFAR-10) before jumping into large-scale deep learning projects.
-    `
-  },
-  {
-    slug: 'data-science-python',
-    content: `
+    `,
+    },
+    {
+        slug: "data-science-python",
+        content: `
     # 📊 Data Science with Python
 
 ![Data Science with Python](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234769/python-la-gi-1_cibk9b.jpg)
@@ -286,11 +285,11 @@ Python has become the go-to language for data scientists due to its simplicity, 
 ---
 
 💡 *Tip:* Practice on platforms like **Kaggle**, **Google Colab**, or use real datasets like **Titanic**, **Iris**, or **Netflix Recommendations** to sharpen your skills.
-`
-  },
-  {
-    slug: 'responsive-ui-frontend',
-    content: `
+`,
+    },
+    {
+        slug: "responsive-ui-frontend",
+        content: `
     # 💻 Building Responsive UIs with Frontend
 
 ![Frontend Development](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234804/front-end_klbf97.png)
@@ -364,17 +363,17 @@ Building responsive UIs is an essential skill for every frontend developer. By c
 ---
 
 💡 *Tip:* Use frameworks like **Next.js**, **Tailwind CSS**, or **React + Headless UI** to quickly build fast, responsive, and accessible interfaces.
-    `
-  },
-  {
-    slug: 'backend-nodejs',
-    content: `
+    `,
+    },
+    {
+        slug: "backend-nodejs",
+        content: `
     
-    `
-  },
-  {
-    slug: 'fullstack-development',
-    content: `
+    `,
+    },
+    {
+        slug: "fullstack-development",
+        content: `
     # 🌐 Fullstack Development Guide
 
 ![Fullstack Development](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234876/full_fspyad.jpg)
@@ -459,11 +458,11 @@ Being a fullstack developer empowers you to build complete, production-ready app
 
 💡 *Tip:* Use a framework like **Next.js** for fullstack projects — it supports both frontend pages and backend APIs in one codebase.
 
-    `
-  },
-  {
-    slug: 'network-security-essentials',
-    content: `
+    `,
+    },
+    {
+        slug: "network-security-essentials",
+        content: `
     # 🔐 Network Security Essentials
 
 ![Network Security](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234958/net_tsjihf.png)
@@ -538,11 +537,11 @@ In our increasingly digital world, **network security** is essential for protect
 
 💡 *Tip:* Combine hardware solutions (firewalls, routers) with software strategies (antivirus, encryption) for a layered security approach — also known as **Defense in Depth**.
 
-    `
-  },
-  {
-    slug: 'app-security-practices',
-    content: `
+    `,
+    },
+    {
+        slug: "app-security-practices",
+        content: `
     # 🛡️ Application Security Best Practices
 
 ![Application Security](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750235077/best_jijdle.jpg)
@@ -629,11 +628,11 @@ Building secure applications requires proactive effort across all stages of deve
 ---
 
 🔐 *Tip:* Make security part of your **Definition of Done** — no feature is complete unless it’s secure.
-    `
-  },
-  {
-    slug: 'ethical-hacking-techniques',
-    content: `
+    `,
+    },
+    {
+        slug: "ethical-hacking-techniques",
+        content: `
     # 🕵️ Ethical Hacking Techniques
 
 ![Ethical Hacking](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750235158/hack_zrhupm.jpg)
@@ -709,11 +708,11 @@ Ethical hacking is a powerful way to protect digital systems in a proactive, res
 ---
 
 💡 *Tip:* Start practicing legally on platforms like **Hack The Box**, **TryHackMe**, or set up a **home lab** using virtual machines.
-    `
-  },
-  {
-    slug: 'devops-best-practices',
-    content: `
+    `,
+    },
+    {
+        slug: "devops-best-practices",
+        content: `
     # ⚙️ DevOps Best Practices
 
 ![DevOps Workflow](https://res.cloudinary.com/deq5l7fn1/image/upload/v1749796002/devops_workflow.jpg)
@@ -783,11 +782,11 @@ Ethical hacking is a powerful way to protect digital systems in a proactive, res
 DevOps is not just about tools — it’s about people, processes, and culture. By adopting these best practices, teams can release faster, operate more reliably, and deliver better value to end users.
 
 > 💬 “Build fast, test often, deploy safely — that’s the DevOps way.”
-    `
-  },
-  {
-    slug : 'intro-cloud-computing',
-    content: `
+    `,
+    },
+    {
+        slug: "intro-cloud-computing",
+        content: `
     # ☁️ Introduction to Cloud Computing
 
 ![Cloud Computing](https://res.cloudinary.com/deq5l7fn1/image/upload/v1749795274/blockchain_security.jpg)
@@ -874,11 +873,11 @@ Instead of owning physical infrastructure or data centers, companies can rent ac
 Cloud computing has revolutionized how businesses operate by offering scalable, flexible, and cost-effective solutions. Whether you're a startup or a large enterprise, embracing the cloud can accelerate innovation and growth.
 
 > “The cloud is not just a place — it’s a shift in how we think about computing.”
-    `
-  },
-  {
-    slug: 'blockchain-security',
-    content: `
+    `,
+    },
+    {
+        slug: "blockchain-security",
+        content: `
     # 🔐 Blockchain Security
 
 ![Blockchain Security](https://res.cloudinary.com/deq5l7fn1/image/upload/v1749795274/blockchain_security.jpg)
@@ -953,6 +952,6 @@ Blockchain offers transparency, immutability, and decentralization — but it’
 > 🛡️ “Trust in code must be earned through rigorous security.”
 
 
-    `
-  }
-]
+    `,
+    },
+];

@@ -5,18 +5,23 @@ Python, with its simplicity and versatility, has become a popular choice for bac
 ![Python FastAPI Backend](https://res.cloudinary.com/deq5l7fn1/image/upload/v1750234840/python-fastapi-backend.jpg)
 
 ## Why Python and FastAPI for Backend?
+
 FastAPI leverages Python’s asynchronous capabilities and type hints, making it ideal for building fast, scalable APIs. It’s built on Starlette and Pydantic, providing automatic data validation and OpenAPI documentation.
 
 Key benefits:
+
 - **Python simplicity**: Easy-to-read syntax speeds up development.
 - **High performance**: Asynchronous support rivals Node.js in speed.
 - **Automatic documentation**: Built-in Swagger UI for testing APIs.
 
 ## Setting Up a FastAPI Server
+
 Let’s create a simple FastAPI server to handle HTTP requests for a task management system.
 
 ### Step 1: Initialize the Project
+
 Create a new directory and set up a Python environment:
+
 ```bash
 mkdir task-api
 cd task-api
@@ -26,6 +31,7 @@ pip install fastapi uvicorn
 ```
 
 ### Step 2: Create a Basic Server
+
 Create a file named `main.py` with the following code:
 
 ```python
@@ -40,15 +46,19 @@ async def root():
 ```
 
 Run the server using:
+
 ```bash
 uvicorn main:app --reload
 ```
+
 Visit `http://localhost:8000` in your browser to see the message, or go to `http://localhost:8000/docs` for the interactive Swagger UI.
 
 ## Building a Task Management API
+
 Let’s extend the server to handle tasks with CRUD operations (Create, Read, Update, Delete).
 
 ### Step 3: Create a Task Endpoint
+
 Update `main.py` to manage tasks in memory (for simplicity):
 
 ```python
@@ -108,7 +118,9 @@ async def delete_task(task_id: int):
 ```
 
 ### Step 4: Test the API
+
 Use the Swagger UI at `http://localhost:8000/docs` to test the endpoints:
+
 - **GET** `/tasks`: Retrieve all tasks.
 - **POST** `/tasks`: Create a new task with a JSON body (e.g., `{"id": 0, "title": "My Task", "description": "Complete this task", "created_at": "2025-08-18T15:00:00"}`).
 - **GET** `/tasks/{id}`: Retrieve a specific task.
@@ -116,16 +128,20 @@ Use the Swagger UI at `http://localhost:8000/docs` to test the endpoints:
 - **DELETE** `/tasks/{id}`: Delete a task.
 
 For example, to create a task using curl:
+
 ```bash
 curl -X POST http://localhost:8000/tasks -H "Content-Type: application/json" -d '{"id": 0, "title": "My Task", "description": "Complete this task", "created_at": "2025-08-18T15:00:00"}'
 ```
 
 ## Scaling the Backend
+
 For a production-ready task API, consider:
+
 - **Database Integration**: Use SQLAlchemy with PostgreSQL or MongoDB for persistent storage.
 - **Authentication**: Implement JWT-based authentication with OAuth2.
 - **Error Handling**: Use FastAPI’s exception handlers for consistent responses.
 - **Logging**: Integrate Python’s `logging` module or third-party tools like Loguru.
 
 ## Conclusion
+
 Python with FastAPI offers a modern, efficient way to build backend APIs. The example above demonstrates a simple task management API, but you can extend it with features like user accounts, task prioritization, or notifications. Start exploring FastAPI today to create your own high-performance backend!
