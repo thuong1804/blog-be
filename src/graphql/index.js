@@ -12,6 +12,7 @@ const apolloServer = new ApolloServer({
 
         return { user };
     },
+    introspection: true
 });
 
 export default apolloServer;
