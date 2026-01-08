@@ -6,7 +6,16 @@ const prisma = new PrismaClient();
 export const postResolvers = {
     Query: {
         posts: async (_parent, args) => {
-            const { categorySlug } = args;
+            const {
+                page = 1,
+                pageSize = 12,
+                categorySlug,
+                search,
+            } = args;
+            const skip = (page - 1) * pageSize;
+            const take = pageSize;
+
+            let categoryFilter = {};
 
             if (categorySlug) {
                 const parentCategory = await prisma.category.findUnique({
@@ -23,39 +32,61 @@ export const postResolvers = {
                     ...parentCategory.children.map((child) => child.id),
                 ];
 
-                return await prisma.post.findMany({
-                    where: {
-                        categoryId: {
-                            in: categoryIds,
-                        },
+                categoryFilter = {
+                    categoryId: {
+                        in: categoryIds,
+                    },
+                };
+            }
+
+            const whereCondition = {
+                ...categoryFilter,
+                ...(search
+                    ? {
+                        OR: [
+                            { title: { contains: search, mode: "insensitive" } },
+                            { excerpt: { contains: search, mode: "insensitive" } },
+                            { content: { contains: search, mode: "insensitive" } },
+                        ],
+                    }
+                : {}),
+            };
+
+            const [items, total] = await Promise.all([
+                prisma.post.findMany({
+                    where: whereCondition,
+                    skip,
+                    take,
+                    orderBy: {
+                        createdAt: "desc",
                     },
                     include: {
                         tags: true,
                         author: true,
-                        comments: true,
                         category: {
                             include: {
                                 parent: true,
-                                children: true,
                             },
                         },
                     },
-                });
-            }
+                }),
 
-            return await prisma.post.findMany({
-                include: {
-                    tags: true,
-                    author: true,
-                    comments: true,
-                    category: {
-                        include: {
-                            parent: true,
-                            children: true,
-                        },
-                    },
+                prisma.post.count({
+                    where: whereCondition,
+                }),
+            ]);
+
+            const totalPages = Math.ceil(total / pageSize);
+
+            return {
+                items,
+                meta: {
+                    total,
+                    totalPages,
+                    currentPage: page,
+                    pageSize,
                 },
-            });
+            };
         },
         post: async (_parent, { slug }) => {
             return await prisma.post.findUnique({

@@ -24,8 +24,25 @@ const postTypeDefs = gql`
         comments: [Comment]
     }
 
+    type PostPagination {
+        items: [Post!]!
+        meta: PaginationMeta!
+    }
+
+    type PaginationMeta {
+        total: Int!
+        totalPages: Int!
+        currentPage: Int!
+        pageSize: Int!
+    }
+
     type Query {
-        posts(categorySlug: String): [Post!]!
+        posts(
+        page: Int = 1,
+        pageSize: Int = 10,
+        categorySlug: String,
+        search: String,
+    ): PostPagination!
         postsByTitle(search: String): [Post!]!
         post(slug: String!): Post
         popularPosts: [Post!]
