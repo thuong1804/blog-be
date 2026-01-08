@@ -5,7 +5,6 @@ import "dotenv/config";
 import cors from "cors";
 import apolloServer from "./graphql/index.js";
 import { v2 as cloudinary } from "cloudinary";
-import bodyParser from "body-parser";
 import multer from "multer";
 import { expressMiddleware } from "@apollo/server/express4";
 
@@ -29,13 +28,12 @@ app.use(
         credentials: true,
     }),
 );
-app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
     "/graphql",
-    bodyParser.json(),
+    express.json(),
     expressMiddleware(apolloServer, {
         context: async ({ req }) => {
             const token = req.headers.authorization || "";
