@@ -3,8 +3,7 @@ FROM node:18
 WORKDIR /app
 
 COPY package*.json ./
-
-RUN npm install
+RUN npm ci
 
 COPY prisma ./prisma
 
@@ -14,4 +13,4 @@ COPY . .
 
 EXPOSE 3005
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run migrate && npm run start"]

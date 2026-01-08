@@ -23,7 +23,7 @@ app.use(express.static("public"));
 
 app.use(
     cors({
-        origin: ["http://localhost:5000"],
+        origin: [process.env.URL_FE || "http://localhost:5000"],
         credentials: true,
     }),
 );
