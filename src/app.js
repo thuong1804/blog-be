@@ -6,7 +6,7 @@ import cors from "cors";
 import apolloServer from "./graphql/index.js";
 import { v2 as cloudinary } from "cloudinary";
 import multer from "multer";
-import { expressMiddleware } from "@apollo/server/express4";
+import { expressMiddleware } from '@as-integrations/express5'
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -34,12 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
     "/graphql",
     express.json(),
-    expressMiddleware(apolloServer, {
-        context: async ({ req }) => {
-            const token = req.headers.authorization || "";
-            return { token };
-        },
-    }),
+    expressMiddleware(apolloServer)
 );
 
 export default app;
