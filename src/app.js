@@ -18,6 +18,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const app = express();
+await apolloServer.start();
 
 app.use(express.static("public"));
 
@@ -29,14 +30,7 @@ app.use(
 );
 app.use(express.json());
 
-app.use((req, res, next) => {
-    if (!req.body && process.env.NODE_ENV !== "production") {
-        req.body = {};
-    }
-    next();
-});
-
-await apolloServer.start();
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
     "/graphql",
