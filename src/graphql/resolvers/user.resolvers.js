@@ -11,13 +11,28 @@ export const userResolvers = {
                     where: { handle: String(handle) },
                     include: {
                         posts: {
-                            include: {
+                            select: {
+                                id: true,
+                                title: true,
+                                slug: true,
+                                excerpt: true,
+                                image: true,
+                                description: true,
                                 author: true,
-                                tags: true,
+                                updatedAt: true,
+                                createdAt: true,
                                 category: {
-                                    include: {
-                                        children: true,
-                                        parent: true,
+                                    select: {
+                                        name: true,
+                                        id: true,
+                                        slug: true,
+                                        parent: {
+                                            select: {
+                                                name: true,
+                                                id: true,
+                                                slug: true,
+                                            },
+                                        },
                                     },
                                 },
                             },
