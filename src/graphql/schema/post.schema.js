@@ -38,15 +38,16 @@ const postTypeDefs = gql`
 
     type Query {
         posts(
-        page: Int = 1,
-        pageSize: Int = 10,
-        categorySlug: String,
-        search: String,
-    ): PostPagination!
+            page: Int = 1,
+            pageSize: Int = 10,
+            categorySlug: String,
+            search: String,
+        ): PostPagination!
         postsByTitle(search: String): [Post!]!
         post(slug: String!): Post
         popularPosts: [Post!]
         postsLatest(skip: Int = 0, take: Int = 6): [Post!]
+        postAllSlugs: [Post]
     }
 
     type PostResponse {

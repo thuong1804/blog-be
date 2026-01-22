@@ -49,7 +49,7 @@ export const postResolvers = {
                             { content: { contains: search, mode: "insensitive" } },
                         ],
                     }
-                : {}),
+                    : {}),
             };
 
             const [items, total] = await Promise.all([
@@ -60,12 +60,25 @@ export const postResolvers = {
                     orderBy: {
                         createdAt: "desc",
                     },
-                    include: {
-                        tags: true,
+                    select: {
+                        id: true,
+                        title: true,
+                        slug: true,
+                        excerpt: true,
+                        image: true,
+                        updatedAt: true,
+                        createdAt: true,
                         author: true,
                         category: {
-                            include: {
-                                parent: true,
+                            select: {
+                            name: true,
+                            id: true,
+                                parent: {
+                                    select: {
+                                        name: true,
+                                        id: true
+                                    },
+                                },
                             },
                         },
                     },
@@ -107,15 +120,28 @@ export const postResolvers = {
         popularPosts: async () => {
             return await prisma.post.findMany({
                 where: { isPopular: true },
-                include: {
+                select: {
+                    id: true,
+                    title: true,
+                    slug: true,
+                    excerpt: true,
+                    image: true,
+                    description: true,
                     author: true,
+                    updatedAt: true,
+                    createdAt: true,
                     category: {
-                        include: {
-                            parent: true,
-                            children: true,
+                        select: {
+                            name: true,
+                            id: true,
+                            parent: {
+                                select: {
+                                    name: true,
+                                    id: true
+                                },
+                            },
                         },
                     },
-                    tags: true,
                 },
             });
         },
@@ -127,15 +153,27 @@ export const postResolvers = {
                         mode: "insensitive",
                     },
                 },
-                include: {
+                select: {
+                    id: true,
+                    title: true,
+                    slug: true,
+                    excerpt: true,
+                    image: true,
+                    updatedAt: true,
+                    createdAt: true,
                     author: true,
                     category: {
-                        include: {
-                            parent: true,
-                            children: true,
+                        select: {
+                            name: true,
+                            id: true,
+                            parent: {
+                                select: {
+                                    name: true,
+                                    id: true
+                                },
+                            },
                         },
                     },
-                    tags: true,
                 },
             });
         },
@@ -146,16 +184,44 @@ export const postResolvers = {
                 },
                 take,
                 skip,
-                include: {
+                select: {
+                    id: true,
+                    title: true,
+                    slug: true,
+                    excerpt: true,
+                    image: true,
+                    updatedAt: true,
+                    createdAt: true,
+                    description: true,
                     author: true,
                     category: {
-                        include: {
-                            parent: true,
-                            children: true,
+                        select: {
+                            name: true,
+                            id: true,
+                            parent: {
+                                select: {
+                                    name: true,
+                                    id: true
+                                },
+                            },
                         },
                     },
-                    tags: true,
                 },
+            });
+        },
+        postAllSlugs: async () => {
+            return await prisma.post.findMany({
+                select: {
+                    slug: true,
+                    category: {
+                        select: {
+                            slug: true,
+                            parent: {
+                                select: { slug: true }
+                            }
+                        }
+                    }
+                }
             });
         },
     },
