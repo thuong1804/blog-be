@@ -65,6 +65,7 @@ export const postResolvers = {
                         title: true,
                         slug: true,
                         excerpt: true,
+                        description: true,
                         image: true,
                         updatedAt: true,
                         createdAt: true,
