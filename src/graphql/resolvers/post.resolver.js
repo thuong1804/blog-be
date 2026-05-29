@@ -270,16 +270,21 @@ export const postResolvers = {
             }
         },
         deletePost: async (_, args) => {
-            const { postId, userId } = args;
+            const { postId, authorId } = args;
             try {
                 checkRequiredField({ args });
 
-                await prisma.post.delete({
-                    data: {
+               const deleted = await prisma.post.deleteMany({
+                    where: {
                         id: postId,
-                        authorId: userId,
+                        authorId: authorId,
                     },
                 });
+
+                if (deleted.count === 0) {
+                    throw new Error("The post was not found, or you do not have permission to delete it.");
+                }
+
                 return { success: true, message: "Delete post message" };
             } catch (error) {
                 console.error(error);

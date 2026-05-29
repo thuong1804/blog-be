@@ -22,10 +22,25 @@ await apolloServer.start();
 
 app.use(express.static("public"));
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map(item => item.trim())
+    : [process.env.URL_FE || "http://localhost:5000"]
+).flatMap(item => {
+    if (!item.startsWith("http://") && !item.startsWith("https://")) {
+        return [`http://${item}`, `https://${item}`];
+    }
+    return [item];
+});
+
 app.use(
     cors({
-        origin: [process.env.URL_FE || "http://localhost:5000"],
-        // origin: true,
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(null, false);
+            }
+        },
         credentials: true,
     }),
 );
