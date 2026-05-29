@@ -11,10 +11,27 @@ model User {
   id        Int       @id @default(autoincrement())
   email     String    @unique
   name      String?
+  password  String?
+  handle    String?   @unique
+  description   String?
   avatar    String?
+  avatarPublicId  String?
   createdAt DateTime  @default(now())
   comments  Comment[]
   posts     Post[]
+  accounts    OAuthAccount[]
+}
+
+model OAuthAccount {
+  id                 Int      @id @default(autoincrement())
+  provider           String
+  providerAccountId  String
+  accessToken        String?
+  refreshToken       String?
+  userId             Int
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 model Post {
@@ -27,6 +44,7 @@ model Post {
   description String
   isPopular   Boolean   @default(false)
   image       String
+  imagePublicId  String?
   excerpt     String?
   isFeatured  Boolean   @default(false)
   readingTime Int?
@@ -64,4 +82,13 @@ model Category {
   parent      Category?  @relation("Subcategories", fields: [parentId], references: [id])
   children    Category[] @relation("Subcategories")
   posts       Post[]
+}
+
+model OTP {
+  id        Int      @id @default(autoincrement())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  verified  Boolean  @default(false)
 }
