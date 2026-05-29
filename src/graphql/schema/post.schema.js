@@ -66,7 +66,7 @@ const postTypeDefs = gql`
             authorId: Int!
             tagIds: [Int!]!
         ): Post!
-        deletePost(postId: Int!, userId: Int!): PostResponse!
+        deletePost(postId: Int!, authorId: Int!): PostResponse!
     }
 `;
 
