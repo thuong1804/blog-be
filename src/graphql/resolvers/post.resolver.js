@@ -102,13 +102,43 @@ export const postResolvers = {
                 },
             };
         },
-        post: async (_parent, { slug }) => {
+        post: async (_parent, { slug, id }) => {
+            if (!slug && !id) {
+                throw new Error("Either 'slug' or 'id' must be provided.");
+            }
             return await prisma.post.findUnique({
-                where: { slug },
+                where: id ? { id } : { slug },
                 include: {
                     tags: true,
                     author: true,
-                    comments: true,
+                    comments: {
+                        include: {
+                            author: true,
+                        },
+                    },
+                    category: {
+                        include: {
+                            parent: true,
+                            children: true,
+                        },
+                    },
+                },
+            });
+        },
+        postDetail: async (_parent, { id, slug }) => {
+            if (!id && !slug) {
+                throw new Error("Either 'id' or 'slug' must be provided.");
+            }
+            return await prisma.post.findUnique({
+                where: id ? { id } : { slug },
+                include: {
+                    tags: true,
+                    author: true,
+                    comments: {
+                        include: {
+                            author: true,
+                        },
+                    },
                     category: {
                         include: {
                             parent: true,
@@ -270,12 +300,119 @@ export const postResolvers = {
                 throw new Error("Create post failed!");
             }
         },
+        updatePost: async (_, args) => {
+            const {
+                id,
+                title,
+                content,
+                description,
+                excerpt,
+                image,
+                imagePublicId,
+                categoryId,
+                authorId,
+                tagIds,
+                isPopular,
+                isFeatured,
+                readingTime,
+                slug,
+            } = args;
+
+            try {
+                if (!id) {
+                    throw new Error("Post 'id' is required!");
+                }
+
+                const existingPost = await prisma.post.findUnique({
+                    where: { id },
+                });
+
+                if (!existingPost) {
+                    throw new Error(`Post with id ${id} not found.`);
+                }
+
+                if (authorId && existingPost.authorId !== authorId) {
+                    throw new Error("You do not have permission to update this post.");
+                }
+
+                let targetSlug;
+                if (slug) {
+                    targetSlug = formatSlug(slug);
+                } else if (title && title !== existingPost.title) {
+                    targetSlug = formatSlug(title);
+                }
+
+                if (targetSlug && targetSlug !== existingPost.slug) {
+                    const conflict = await prisma.post.findUnique({
+                        where: { slug: targetSlug },
+                    });
+                    if (conflict && conflict.id !== id) {
+                        targetSlug = `${targetSlug}-${Date.now()}`;
+                    }
+                }
+
+                if (categoryId) {
+                    const categoryExists = await prisma.category.findUnique({
+                        where: { id: categoryId },
+                    });
+                    if (!categoryExists) {
+                        throw new Error(`Category with id ${categoryId} not found.`);
+                    }
+                }
+
+                const data = {};
+                if (title !== undefined) data.title = title;
+                if (targetSlug !== undefined) data.slug = targetSlug;
+                if (content !== undefined) {
+                    data.content = NodeHtmlMarkdown.translate(content);
+                }
+                if (description !== undefined) data.description = description;
+                if (excerpt !== undefined) data.excerpt = excerpt;
+                if (image !== undefined) data.image = image;
+                if (imagePublicId !== undefined) data.imagePublicId = imagePublicId;
+                if (categoryId !== undefined) data.categoryId = categoryId;
+                if (isPopular !== undefined) data.isPopular = isPopular;
+                if (isFeatured !== undefined) data.isFeatured = isFeatured;
+                if (readingTime !== undefined) data.readingTime = readingTime;
+
+                if (Array.isArray(tagIds)) {
+                    data.tags = {
+                        set: tagIds.map((tagId) => ({ id: tagId })),
+                    };
+                }
+
+                const updatedPost = await prisma.post.update({
+                    where: { id },
+                    data,
+                    include: {
+                        tags: true,
+                        category: {
+                            include: {
+                                parent: true,
+                                children: true,
+                            },
+                        },
+                        author: true,
+                        comments: {
+                            include: {
+                                author: true,
+                            },
+                        },
+                    },
+                });
+
+                return updatedPost;
+            } catch (error) {
+                console.error("Update post error:", error);
+                throw error;
+            }
+        },
         deletePost: async (_, args) => {
             const { postId, authorId } = args;
             try {
                 checkRequiredField({ args });
 
-               const deleted = await prisma.post.deleteMany({
+               const deleted = await prisma.post.delete({
                     where: {
                         id: postId,
                         authorId: authorId,
