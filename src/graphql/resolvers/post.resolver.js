@@ -1,9 +1,17 @@
 import { PrismaClient } from "@prisma/client";
 import { formatSlug } from "../../utils/index.js";
 import { requireAuth } from "../../middleware/auth.js";
-import { stripHtml } from "../../utils/security.js";
+import {
+    checkRateLimit,
+    getClientIp,
+    stripHtml,
+} from "../../utils/security.js";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 const prisma = new PrismaClient();
+
+// Anti-inflation: 1 IP chỉ +1 view cho 1 bài mỗi 60 phút. Vượt ngưỡng thì
+// trả về số hiện tại mà không tăng (không báo lỗi để FE không vỡ).
+const VIEW_THROTTLE_MS = 60 * 60 * 1000;
 
 export const postResolvers = {
     Query: {
@@ -13,6 +21,7 @@ export const postResolvers = {
                 pageSize = 12,
                 categorySlug,
                 search,
+                tag,
             } = args;
             const skip = (page - 1) * pageSize;
             const take = pageSize;
@@ -43,6 +52,15 @@ export const postResolvers = {
 
             const whereCondition = {
                 ...categoryFilter,
+                ...(tag
+                    ? {
+                        tags: {
+                            some: {
+                                name: { equals: tag, mode: "insensitive" },
+                            },
+                        },
+                    }
+                    : {}),
                 ...(search
                     ? {
                         OR: [
@@ -257,6 +275,16 @@ export const postResolvers = {
                 }
             });
         },
+        siteStats: async () => {
+            const [viewsAgg, totalPosts] = await Promise.all([
+                prisma.post.aggregate({ _sum: { views: true } }),
+                prisma.post.count(),
+            ]);
+            return {
+                totalViews: viewsAgg._sum.views ?? 0,
+                totalPosts,
+            };
+        },
     },
     Mutation: {
         createPost: async (_, args, context) => {
@@ -459,6 +487,29 @@ export const postResolvers = {
                     error.message || "Delete post failed!",
                 );
             }
+        },
+        incrementPostViews: async (_, { postId }, context) => {
+            const post = await prisma.post.findUnique({
+                where: { id: postId },
+                select: { id: true, views: true },
+            });
+            if (!post) {
+                throw new Error("Post not found.");
+            }
+            const throttled = checkRateLimit(
+                `view:post:${postId}:${getClientIp(context?.req)}`,
+                1,
+                VIEW_THROTTLE_MS,
+            );
+            if (!throttled.allowed) {
+                return post.views ?? 0;
+            }
+            const updated = await prisma.post.update({
+                where: { id: postId },
+                data: { views: { increment: 1 } },
+                select: { views: true },
+            });
+            return updated.views ?? 0;
         },
     },
 };

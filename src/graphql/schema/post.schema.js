@@ -42,6 +42,7 @@ const postTypeDefs = gql`
             pageSize: Int = 10
             categorySlug: String
             search: String
+            tag: String
         ): PostPagination!
         postsByTitle(search: String): [Post!]!
         post(slug: String, id: Int): Post
@@ -49,11 +50,17 @@ const postTypeDefs = gql`
         popularPosts: [Post!]
         postsLatest(skip: Int = 0, take: Int = 6): [Post!]
         postAllSlugs: [Post]
+        siteStats: SiteStats!
     }
 
     type PostResponse {
         success: Boolean!
         message: String
+    }
+
+    type SiteStats {
+        totalViews: Int!
+        totalPosts: Int!
     }
 
     type Mutation {
@@ -91,6 +98,7 @@ const postTypeDefs = gql`
             # Deprecated: ignored, ownership is checked via access token.
             authorId: Int
         ): PostResponse!
+        incrementPostViews(postId: Int!): Int!
     }
 `;
 
