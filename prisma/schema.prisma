@@ -20,6 +20,7 @@ model User {
   comments  Comment[]
   posts     Post[]
   accounts    OAuthAccount[]
+  refreshTokens RefreshToken[]
 }
 
 model OAuthAccount {
@@ -91,4 +92,29 @@ model OTP {
   expiresAt DateTime
   createdAt DateTime @default(now())
   verified  Boolean  @default(false)
+}
+
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  jti        String   @unique
+  userId     Int
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  revoked    Boolean  @default(false)
+  replacedBy String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  jti       String   @unique
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }

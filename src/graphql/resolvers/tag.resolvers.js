@@ -23,9 +23,9 @@ export const tagResolvers = {
                         },
                     },
                 });
-            } catch (error) {
-                console.error("Error fetching users:", error);
-                throw new Error("Failed to fetch users");
+            } catch {
+                console.error("Error fetching tags");
+                throw new Error("Failed to fetch tags");
             }
         },
     },

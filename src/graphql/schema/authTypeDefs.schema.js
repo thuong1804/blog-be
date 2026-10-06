@@ -21,9 +21,20 @@ export const authTypeDefs = gql`
             handle: String
         ): AuthPayload!
         loginWithGoogle(idToken: String!): AuthPayload!
-        validatePassword(email: String!, password: String): ResultResponse!
-        changePassword(email: String!, password: String): ResultResponse!
+        validatePassword(
+            password: String!
+            email: String
+            id: Int
+        ): ResultResponse!
+        changePassword(
+            password: String
+            newPassword: String
+            oldPassword: String
+            email: String
+            id: Int
+        ): ResultResponse!
         refreshToken(refreshToken: String!): AuthPayload!
         resetPassword(token: String!, newPassword: String!): ResultResponse!
+        logout(refreshToken: String!): Boolean!
     }
 `;
