@@ -61,7 +61,7 @@ app.use(
     "/graphql",
     express.json({ limit: "100kb" }),
     expressMiddleware(apolloServer, {
-        contextValue: async ({ req }) => buildContext({ req }),
+        context: async ({ req }) => buildContext({ req }),
     })
 );
 

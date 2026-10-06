@@ -15,9 +15,9 @@ export function buildContext({ req }) {
     return { user, req };
 }
 
-// expressMiddleware(apolloServer, { contextValue }) is wired in app.js;
-// keep a default context for standalone/test usage.
-export async function contextValue({ req }) {
+// expressMiddleware(apolloServer, { context }) is wired in app.js;
+// keep a default context builder for standalone/test usage.
+export async function context({ req }) {
     return buildContext({ req });
 }
 
