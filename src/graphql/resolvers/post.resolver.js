@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-import { checkRequiredField, formatSlug } from "../../utils/index.js";
+import { formatSlug } from "../../utils/index.js";
+import { requireAuth } from "../../middleware/auth.js";
+import { stripHtml } from "../../utils/security.js";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 const prisma = new PrismaClient();
 
@@ -257,7 +259,11 @@ export const postResolvers = {
         },
     },
     Mutation: {
-        createPost: async (_, args) => {
+        createPost: async (_, args, context) => {
+            // IDOR fix: author is always the authenticated user, never the
+            // client-supplied `authorId` (kept optional for FE compat).
+            const authUser = requireAuth(context);
+            const authorId = Number(authUser.userId);
             const {
                 title,
                 content,
@@ -265,26 +271,29 @@ export const postResolvers = {
                 excerpt,
                 image,
                 categoryId,
-                authorId,
                 tagIds,
             } = args;
             try {
-                checkRequiredField(args);
+                if (!title || !content || !description || !image || !categoryId) {
+                    throw new Error("Missing required fields!");
+                }
 
                 const markdownContent = NodeHtmlMarkdown.translate(content);
 
                 const post = await prisma.post.create({
                     data: {
-                        title,
+                        title: stripHtml(title, 200),
                         slug: formatSlug(title),
                         content: markdownContent,
-                        description,
-                        excerpt,
+                        description: stripHtml(description, 5000),
+                        excerpt: excerpt
+                            ? stripHtml(excerpt, 500)
+                            : undefined,
                         image,
                         categoryId,
                         authorId,
                         tags: {
-                            connect: tagIds.map((id) => ({ id })),
+                            connect: (tagIds || []).map((id) => ({ id })),
                         },
                     },
                     include: {
@@ -296,11 +305,14 @@ export const postResolvers = {
 
                 return post;
             } catch (error) {
-                console.error(error);
-                throw new Error("Create post failed!");
+                console.error("Create post error");
+                throw new Error(error.message || "Create post failed!");
             }
         },
-        updatePost: async (_, args) => {
+        updatePost: async (_, args, context) => {
+            // IDOR fix: ownership checked against token identity; the
+            // client-supplied `authorId` is ignored.
+            const authUser = requireAuth(context);
             const {
                 id,
                 title,
@@ -310,7 +322,6 @@ export const postResolvers = {
                 image,
                 imagePublicId,
                 categoryId,
-                authorId,
                 tagIds,
                 isPopular,
                 isFeatured,
@@ -331,8 +342,10 @@ export const postResolvers = {
                     throw new Error(`Post with id ${id} not found.`);
                 }
 
-                if (authorId && existingPost.authorId !== authorId) {
-                    throw new Error("You do not have permission to update this post.");
+                if (Number(existingPost.authorId) !== Number(authUser.userId)) {
+                    throw new Error(
+                        "You do not have permission to update this post.",
+                    );
                 }
 
                 let targetSlug;
@@ -361,13 +374,16 @@ export const postResolvers = {
                 }
 
                 const data = {};
-                if (title !== undefined) data.title = title;
+                if (title !== undefined)
+                    data.title = stripHtml(title, 200);
                 if (targetSlug !== undefined) data.slug = targetSlug;
                 if (content !== undefined) {
                     data.content = NodeHtmlMarkdown.translate(content);
                 }
-                if (description !== undefined) data.description = description;
-                if (excerpt !== undefined) data.excerpt = excerpt;
+                if (description !== undefined)
+                    data.description = stripHtml(description, 5000);
+                if (excerpt !== undefined)
+                    data.excerpt = stripHtml(excerpt, 500);
                 if (image !== undefined) data.image = image;
                 if (imagePublicId !== undefined) data.imagePublicId = imagePublicId;
                 if (categoryId !== undefined) data.categoryId = categoryId;
@@ -380,6 +396,8 @@ export const postResolvers = {
                         set: tagIds.map((tagId) => ({ id: tagId })),
                     };
                 }
+
+                // NOTE: authorId can never be changed via updatePost.
 
                 const updatedPost = await prisma.post.update({
                     where: { id },
@@ -403,30 +421,43 @@ export const postResolvers = {
 
                 return updatedPost;
             } catch (error) {
-                console.error("Update post error:", error);
+                console.error("Update post error");
                 throw error;
             }
         },
-        deletePost: async (_, args) => {
-            const { postId, authorId } = args;
+        deletePost: async (_, args, context) => {
+            // IDOR fix: ownership checked against token identity; the
+            // client-supplied `authorId` (optional, deprecated) is ignored.
+            const authUser = requireAuth(context);
+            const { postId } = args;
             try {
-                checkRequiredField({ args });
-
-               const deleted = await prisma.post.delete({
-                    where: {
-                        id: postId,
-                        authorId: authorId,
-                    },
-                });
-
-                if (deleted.count === 0) {
-                    throw new Error("The post was not found, or you do not have permission to delete it.");
+                if (!postId) {
+                    throw new Error('Field "postId" is required!');
                 }
+
+                const existing = await prisma.post.findUnique({
+                    where: { id: postId },
+                    select: { id: true, authorId: true },
+                });
+                if (
+                    !existing ||
+                    Number(existing.authorId) !== Number(authUser.userId)
+                ) {
+                    throw new Error(
+                        "The post was not found, or you do not have permission to delete it.",
+                    );
+                }
+
+                await prisma.post.delete({
+                    where: { id: postId },
+                });
 
                 return { success: true, message: "Delete post message" };
             } catch (error) {
-                console.error(error);
-                throw new Error("Delete post failed!");
+                console.error("Delete post error");
+                throw new Error(
+                    error.message || "Delete post failed!",
+                );
             }
         },
     },
