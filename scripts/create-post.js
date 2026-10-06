@@ -7,7 +7,7 @@ import "dotenv/config";
 
 const prisma = new PrismaClient();
 
-// Helper: chuyển chuỗi thành slug chuẩn tiếng Việt, an toàn URL
+// Helper: convert string to URL-safe slug
 function generateSlug(text) {
     const cleanText = text
         .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "")
@@ -21,14 +21,14 @@ function generateSlug(text) {
     }) || `post-${Date.now()}`;
 }
 
-// Helper: tính thời gian đọc ước tính (reading time)
+// Helper: calculate estimated reading time
 function calculateReadingTime(text) {
     const words = text.trim().split(/\s+/).length;
     const wordsPerMinute = 200;
     return Math.max(1, Math.ceil(words / wordsPerMinute));
 }
 
-// Helper: parse CLI arguments dạng --key="value" hoặc --flag
+// Helper: parse CLI arguments (--key="value" or --flag)
 function parseArgs(args) {
     const result = { _: [] };
     for (let i = 0; i < args.length; i++) {
@@ -47,12 +47,12 @@ function parseArgs(args) {
     return result;
 }
 
-// Helper: Trích xuất Frontmatter & metadata từ file Markdown
+// Helper: Extract frontmatter & metadata from Markdown file
 function parseMarkdownFile(fileContent) {
     let metadata = {};
     let content = fileContent;
 
-    // 1. Kiểm tra Frontmatter dạng YAML (--- ... ---)
+    // 1. Check YAML frontmatter (--- ... ---)
     const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
     const frontmatterMatch = fileContent.match(frontmatterRegex);
 
@@ -71,7 +71,7 @@ function parseMarkdownFile(fileContent) {
         });
     }
 
-    // 2. Tìm title nếu chưa có: lấy dòng # Heading 1 đầu tiên
+    // 2. Find title if not present: get the first # Heading 1 line
     if (!metadata.title) {
         const headingMatch = content.match(/^#\s+(.+)$/m);
         if (headingMatch) {
@@ -79,7 +79,7 @@ function parseMarkdownFile(fileContent) {
         }
     }
 
-    // 3. Tìm ảnh đầu tiên nếu chưa có: ![alt](url) hoặc <img src="url">
+    // 3. Find first image if not present: ![alt](url) or <img src="url">
     if (!metadata.image) {
         const imgMdMatch = content.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/);
         if (imgMdMatch) {
@@ -92,7 +92,7 @@ function parseMarkdownFile(fileContent) {
         }
     }
 
-    // 4. Tìm metadata inline dạng **Key**: Value
+    // 4. Find inline metadata formatted as **Key**: Value
     const inlineMetaRegex = /\*\*(Title|Slug|Category|Tags|Image|Author|Description|Excerpt)\*\*:\s*`?([^`\n\r]+)`?/gi;
     let match;
     while ((match = inlineMetaRegex.exec(content)) !== null) {
@@ -102,7 +102,7 @@ function parseMarkdownFile(fileContent) {
         }
     }
 
-    // 5. Tìm đoạn mô tả (description/excerpt) nếu chưa có
+    // 5. Find description/excerpt if not present
     if (!metadata.description || !metadata.excerpt) {
         const cleanParagraphs = content
             .replace(/^#+.*$/gm, "")
@@ -114,7 +114,7 @@ function parseMarkdownFile(fileContent) {
             .map((p) => p.trim())
             .filter((p) => p.length > 20);
 
-        const firstPara = cleanParagraphs[0] || "Bài viết mới được tạo.";
+        const firstPara = cleanParagraphs[0] || "Newly created post.";
         const summary = firstPara.length > 160 ? firstPara.slice(0, 157) + "..." : firstPara;
 
         if (!metadata.description) metadata.description = summary;
@@ -124,7 +124,7 @@ function parseMarkdownFile(fileContent) {
     return { metadata, content };
 }
 
-// Xử lý tạo 1 bài viết từ file
+// Process creating a post from file
 async function processSingleFile(filePath, options = {}) {
     let resolvedPath = path.isAbsolute(filePath)
         ? filePath
@@ -143,20 +143,20 @@ async function processSingleFile(filePath, options = {}) {
     }
 
     if (!fs.existsSync(resolvedPath)) {
-        console.error(`❌ Không tìm thấy file: ${filePath}`);
+        console.error(`❌ File not found: ${filePath}`);
         return false;
     }
 
     const fileContent = fs.readFileSync(resolvedPath, "utf-8");
     const { metadata: fileMeta, content: parsedContent } = parseMarkdownFile(fileContent);
 
-    // Lấy tên file làm fallback slug nếu không có title
+    // Use filename as fallback slug if no title
     const fileBaseName = path.basename(resolvedPath).replace(/\.(md|markdown)$/i, "");
 
     const title = options.title || fileMeta.title || fileBaseName;
     const slug = options.slug || fileMeta.slug || generateSlug(title || fileBaseName);
     const content = parsedContent || options.content || "";
-    const description = options.desc || fileMeta.description || "Mô tả bài viết";
+    const description = options.desc || fileMeta.description || "Post description";
     const excerpt = options.excerpt || fileMeta.excerpt || description;
     const image =
         options.image ||
@@ -220,10 +220,10 @@ async function processSingleFile(filePath, options = {}) {
             data: {
                 name: categoryName,
                 slug: categorySlug,
-                description: `Chuyên mục ${categoryName}`,
+                description: `Category ${categoryName}`,
             },
         });
-        console.log(`📁 Đã tự tạo Category mới: "${category.name}"`);
+        console.log(`📁 Created new Category: "${category.name}"`);
     }
 
     // 3. Tags
@@ -245,12 +245,12 @@ async function processSingleFile(filePath, options = {}) {
             tag = await prisma.tag.create({
                 data: { name: tagName },
             });
-            console.log(`🏷️  Đã tự tạo Tag mới: "${tag.name}"`);
+            console.log(`🏷️  Created new Tag: "${tag.name}"`);
         }
         tagConnections.push({ id: tag.id });
     }
 
-    // 4. Kiểm tra tồn tại
+    // 4. Check existence
     const existingPost = await prisma.post.findUnique({
         where: { slug },
     });
@@ -260,9 +260,9 @@ async function processSingleFile(filePath, options = {}) {
 
     if (existingPost) {
         if (!isUpsert) {
-            console.log(`⏭️  Bài viết "${slug}" đã tồn tại trong DB (ID: #${existingPost.id}).`);
-            console.log(`✨ Xem tại     : http://localhost:3000/post/${existingPost.slug}`);
-            console.log(`💡 (Mẹo: Dùng cờ --upsert nếu bạn muốn cập nhật lại nội dung)\n`);
+            console.log(`⏭️  Post "${slug}" already exists in DB (ID: #${existingPost.id}).`);
+            console.log(`✨ View at     : http://localhost:3000/post/${existingPost.slug}`);
+            console.log(`💡 (Tip: Use --upsert flag if you want to update content)\n`);
             return existingPost;
         }
 
@@ -285,7 +285,7 @@ async function processSingleFile(filePath, options = {}) {
             },
             include: { category: true, tags: true, author: true },
         });
-        console.log(`🔄 [UPDATE THÀNH CÔNG] Đã cập nhật bài viết ID: #${post.id}`);
+        console.log(`🔄 [UPDATE SUCCESS] Updated post ID: #${post.id}`);
     } else {
         post = await prisma.post.create({
             data: {
@@ -306,16 +306,16 @@ async function processSingleFile(filePath, options = {}) {
             },
             include: { category: true, tags: true, author: true },
         });
-        console.log(`🎉 [TẠO MỚI THÀNH CÔNG] Đã tạo bài viết ID: #${post.id}`);
+        console.log(`🎉 [CREATE SUCCESS] Created post ID: #${post.id}`);
     }
 
     console.log(`--------------------------------------------------`);
-    console.log(`📌 Tiêu đề     : ${post.title}`);
-    console.log(`🔗 Slug        : ${post.slug}`);
-    console.log(`📂 Chuyên mục  : ${post.category?.name}`);
-    console.log(`🏷️  Tags       : ${post.tags?.map((t) => t.name).join(", ") || "(Trống)"}`);
-    console.log(`⏱️  Thời gian đọc: ~${post.readingTime} phút`);
-    console.log(`✨ Xem tại     : http://localhost:3000/post/${post.slug}`);
+    console.log(`📌 Title        : ${post.title}`);
+    console.log(`🔗 Slug         : ${post.slug}`);
+    console.log(`📂 Category     : ${post.category?.name}`);
+    console.log(`🏷️  Tags         : ${post.tags?.map((t) => t.name).join(", ") || "(Empty)"}`);
+    console.log(`⏱️  Reading time: ~${post.readingTime} min`);
+    console.log(`✨ View at      : http://localhost:3000/post/${post.slug}`);
     console.log(`--------------------------------------------------\n`);
 
     return post;
@@ -325,52 +325,52 @@ async function main() {
     const rawArgs = process.argv.slice(2);
     const parsedArgs = parseArgs(rawArgs);
 
-    // Nếu truyền cờ --all hoặc --sync: Quét toàn bộ file trong public/markdown/
+    // If --all or --sync flag: Scan all files in public/markdown/
     if (parsedArgs.all || parsedArgs.sync) {
         const mdDir = path.resolve(process.cwd(), "public", "markdown");
         if (!fs.existsSync(mdDir)) {
-            console.error(`❌ Thư mục ${mdDir} không tồn tại.`);
+            console.error(`❌ Directory ${mdDir} does not exist.`);
             process.exit(1);
         }
 
         const files = fs.readdirSync(mdDir).filter((f) => /\.(md|markdown)$/i.test(f));
-        console.log(`🔍 Tìm thấy ${files.length} file trong ${mdDir}...\n`);
+        console.log(`🔍 Found ${files.length} files in ${mdDir}...\n`);
 
         for (const file of files) {
-            console.log(`📄 Đang xử lý: ${file}`);
+            console.log(`📄 Processing: ${file}`);
             await processSingleFile(file, parsedArgs);
         }
 
-        console.log(`✅ Đã đồng bộ xong toàn bộ file markdown!`);
+        console.log(`✅ Finished syncing all markdown files!`);
         return;
     }
 
     if (parsedArgs._.length === 0 && !parsedArgs.title) {
         console.log(`
-🚀 CLI TẠO NHANH BÀI VIẾT (Quick Create Post)
+🚀 QUICK CREATE POST CLI
 ==============================================
-Sử dụng:
-  node scripts/create-post.js <tên_file_hoặc_đường_dẫn> [options]
+Usage:
+  node scripts/create-post.js <file_name_or_path> [options]
 
-Ví dụ khi bạn mới thêm file vào public/markdown/:
-  node scripts/create-post.js ten_file_moi.md
-  node scripts/create-post.js ten_file_moi.md --category="Python" --tags="Python,AI"
-  node scripts/create-post.js ten_file_moi.md --upsert
+Example when adding a new file to public/markdown/:
+  node scripts/create-post.js new_file.md
+  node scripts/create-post.js new_file.md --category="Python" --tags="Python,AI"
+  node scripts/create-post.js new_file.md --upsert
 
-Hoặc tự động quét tất cả các file mới trong public/markdown/:
+Or automatically scan all new files in public/markdown/:
   node scripts/create-post.js --all
   node scripts/create-post.js --all --upsert
 
 Options:
-  --title="..."         Ghi đè tiêu đề
-  --slug="..."          Ghi đè slug
-  --category="..."      Tên danh mục (tự tạo nếu chưa có)
-  --tags="..."          Danh sách tags (vd: "Python,AI")
-  --image="..."         URL ảnh đại diện
-  --author="..."        Email tác giả
-  --desc="..."          Mô tả ngắn
-  --upsert              Ghi đè nếu bài đã tồn tại
-  --all                 Quét và tạo tất cả file markdown trong public/markdown/
+  --title="..."         Override title
+  --slug="..."          Override slug
+  --category="..."      Category name (auto-create if absent)
+  --tags="..."          Tags list (e.g., "Python,AI")
+  --image="..."         Featured image URL
+  --author="..."        Author email
+  --desc="..."          Short description
+  --upsert              Overwrite if post already exists
+  --all                 Scan and create all markdown files in public/markdown/
         `);
         process.exit(0);
     }
@@ -381,7 +381,7 @@ Options:
 
 main()
     .catch((error) => {
-        console.error("❌ Lỗi khi thực hiện:", error);
+        console.error("❌ Execution error:", error);
         process.exit(1);
     })
     .finally(async () => {

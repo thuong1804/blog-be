@@ -185,7 +185,7 @@ export function getUserFromRequest(req) {
 export function requireAuth(context) {
     const user = context?.user;
     if (!user?.userId) {
-        throw new Error("Unauthorized. Vui lòng đăng nhập.");
+        throw new Error("Unauthorized. Please log in.");
     }
     return user;
 }

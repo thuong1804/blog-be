@@ -21,7 +21,7 @@ const OTP_TTL_MS = 5 * 60 * 1000;
 const OTP_MAX_FAILS = 5;
 const OTP_LOCK_MS = 15 * 60 * 1000;
 const OTP_LOCK_MESSAGE =
-    "Nhập sai quá 5 lần. Vui lòng thử lại sau 15 phút.";
+    "Too many failed attempts. Please try again after 15 minutes.";
 
 function failKey(email) {
     return `otp:fail:${String(email).toLowerCase()}`;
@@ -89,7 +89,7 @@ export const OTPResolvers = {
                 if (!ipCheck.allowed) {
                     return {
                         success: false,
-                        message: `Gửi OTP quá nhiều. Vui lòng thử lại sau ${ipCheck.retryAfterSec}s.`,
+                        message: `Too many OTP requests. Please try again after ${ipCheck.retryAfterSec}s.`,
                     };
                 }
                 const emailCheck = checkRateLimit(
@@ -100,7 +100,7 @@ export const OTPResolvers = {
                 if (!emailCheck.allowed) {
                     return {
                         success: false,
-                        message: `Gửi OTP quá nhiều. Vui lòng thử lại sau ${emailCheck.retryAfterSec}s.`,
+                        message: `Too many OTP requests. Please try again after ${emailCheck.retryAfterSec}s.`,
                     };
                 }
 
@@ -125,7 +125,7 @@ export const OTPResolvers = {
 
                 // Invalidate previous codes so only the latest is valid.
                 await prisma.oTP.deleteMany({ where: { email } });
-                await prisma.oTP.create({
+                const created = await prisma.oTP.create({
                     data: {
                         email,
                         code: codeHash,
@@ -143,12 +143,26 @@ export const OTPResolvers = {
                     "src/template-html",
                 );
 
-                await sendEmail({
-                    to: email,
-                    subject: "Your OTP Code",
-                    text: `[TechNews] Your OTP Code: ${otp}\nThis code is valid for 5 minutes.\nIf you did not request this, please ignore this email.\nSupport: support@technews.com`,
-                    html,
-                });
+                try {
+                    await sendEmail({
+                        to: email,
+                        subject: "Your OTP Code",
+                        text: `[TechNews] Your OTP Code: ${otp}\nThis code is valid for 5 minutes.\nIf you did not request this, please ignore this email.\nSupport: support@technews.com`,
+                        html,
+                    });
+                } catch (mailErr) {
+                    // If sending email fails, delete the OTP to avoid stranded codes;
+                    // log the actual error for production debugging.
+                    await prisma.oTP.deleteMany({ where: { id: created.id } });
+                    console.error(
+                        `Error sending OTP email: ${String(mailErr?.message || mailErr).slice(0, 300)}`,
+                    );
+                    return {
+                        success: false,
+                        message:
+                            "Failed to send email. Please try again later.",
+                    };
+                }
 
                 return {
                     success: true,
@@ -182,7 +196,7 @@ export const OTPResolvers = {
                 if (!ipCheck.allowed) {
                     return {
                         success: false,
-                        message: `Thử quá nhiều. Vui lòng thử lại sau ${ipCheck.retryAfterSec}s.`,
+                        message: `Too many attempts. Please try again after ${ipCheck.retryAfterSec}s.`,
                     };
                 }
 

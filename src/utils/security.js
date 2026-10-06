@@ -99,20 +99,20 @@ export function validatePasswordPolicy(password) {
     if (typeof password !== "string" || password.length < 8) {
         return {
             ok: false,
-            message: "Mật khẩu phải có ít nhất 8 ký tự.",
+            message: "Password must be at least 8 characters long.",
         };
     }
     if (password.length > 128) {
-        return { ok: false, message: "Mật khẩu quá dài." };
+        return { ok: false, message: "Password is too long." };
     }
     if (!/[a-z]/.test(password) || !/[A-Z]/.test(password)) {
         return {
             ok: false,
-            message: "Mật khẩu phải có cả chữ hoa và chữ thường.",
+            message: "Password must contain both uppercase and lowercase letters.",
         };
     }
     if (!/[0-9]/.test(password)) {
-        return { ok: false, message: "Mật khẩu phải có ít nhất 1 chữ số." };
+        return { ok: false, message: "Password must contain at least 1 digit." };
     }
     return { ok: true };
 }
@@ -157,8 +157,8 @@ export function randomJti() {
 // Generic messages (anti user-enumeration). Keep identical wording for
 // existent vs non-existent accounts.
 // ---------------------------------------------------------------------------
-export const GENERIC_AUTH_MESSAGE = "Email hoặc mật khẩu không đúng.";
+export const GENERIC_AUTH_MESSAGE = "Invalid email or password.";
 export const GENERIC_OTP_SEND_MESSAGE =
-    "Nếu email tồn tại, mã OTP đã được gửi. Vui lòng kiểm tra hộp thư.";
+    "If the email exists, an OTP has been sent. Please check your inbox.";
 export const GENERIC_OTP_VERIFY_MESSAGE =
-    "Mã OTP không đúng hoặc đã hết hạn.";
+    "Invalid or expired OTP code.";

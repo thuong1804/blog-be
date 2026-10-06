@@ -41,7 +41,7 @@ export const cloudinaryResolvers = {
             );
             if (!rl.allowed) {
                 throw new Error(
-                    `Tạo chữ ký upload quá nhiều. Thử lại sau ${rl.retryAfterSec}s.`,
+                    `Too many upload signature requests. Please try again after ${rl.retryAfterSec}s.`,
                 );
             }
             const safeFolder =

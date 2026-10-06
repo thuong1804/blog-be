@@ -70,7 +70,7 @@ function loginRateLimited(context) {
     const ipCheck = checkRateLimit(`login:ip:${ip}`, 20, 15 * 60 * 1000);
     if (!ipCheck.allowed) {
         throw new Error(
-            `Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau ${ipCheck.retryAfterSec}s.`,
+            `Too many login attempts. Please try again after ${ipCheck.retryAfterSec}s.`,
         );
     }
 }
@@ -89,7 +89,7 @@ export const authResolvers = {
                 );
                 if (!emailCheck.allowed) {
                     throw new Error(
-                        `Quá nhiều lần thử. Vui lòng thử lại sau ${emailCheck.retryAfterSec}s.`,
+                        `Too many attempts. Please try again after ${emailCheck.retryAfterSec}s.`,
                     );
                 }
 
@@ -132,12 +132,12 @@ export const authResolvers = {
             const rl = checkRateLimit(`signup:ip:${ip}`, 10, 60 * 60 * 1000);
             if (!rl.allowed) {
                 throw new Error(
-                    `Tạo tài khoản quá nhiều. Vui lòng thử lại sau ${rl.retryAfterSec}s.`,
+                    `Too many accounts created. Please try again after ${rl.retryAfterSec}s.`,
                 );
             }
 
             if (!isValidEmail(email)) {
-                throw new Error("Email không hợp lệ.");
+                throw new Error("Invalid email.");
             }
             const policy = validatePasswordPolicy(password);
             if (!policy.ok) {
@@ -204,12 +204,12 @@ export const authResolvers = {
         },
         loginWithGoogle: async (_, { idToken }) => {
             if (!idToken || typeof idToken !== "string") {
-                throw new Error("Đăng nhập Google thất bại.");
+                throw new Error("Google login failed.");
             }
             const expectedAud = process.env.GOOGLE_CLIENT_ID;
             if (!expectedAud) {
                 console.error("Google login misconfigured");
-                throw new Error("Đăng nhập Google thất bại.");
+                throw new Error("Google login failed.");
             }
             let payload;
             try {
@@ -219,36 +219,36 @@ export const authResolvers = {
                 });
                 payload = ticket.getPayload();
             } catch {
-                throw new Error("Đăng nhập Google thất bại.");
+                throw new Error("Google login failed.");
             }
-            if (!payload) throw new Error("Đăng nhập Google thất bại.");
+            if (!payload) throw new Error("Google login failed.");
 
             // Explicit verify (defense-in-depth even though the library
             // already checks aud/iss/exp).
             const nowSec = Math.floor(Date.now() / 1000);
             if (payload.aud !== expectedAud) {
-                throw new Error("Đăng nhập Google thất bại.");
+                throw new Error("Google login failed.");
             }
             const issOk =
                 payload.iss === "accounts.google.com" ||
                 payload.iss === "https://accounts.google.com";
             if (!issOk) {
-                throw new Error("Đăng nhập Google thất bại.");
+                throw new Error("Google login failed.");
             }
             if (!payload.exp || Number(payload.exp) <= nowSec) {
-                throw new Error("Đăng nhập Google thất bại.");
+                throw new Error("Google login failed.");
             }
             if (
                 payload.email_verified !== undefined &&
                 payload.email_verified !== true &&
                 payload.email_verified !== "true"
             ) {
-                throw new Error("Đăng nhập Google thất bại.");
+                throw new Error("Google login failed.");
             }
 
             const { sub: googleId, email, name, picture } = payload;
             if (!googleId || !email) {
-                throw new Error("Đăng nhập Google thất bại.");
+                throw new Error("Google login failed.");
             }
 
             let account = await prisma.oAuthAccount.findUnique({
@@ -317,7 +317,7 @@ export const authResolvers = {
                 if (!nextPassword) {
                     return {
                         success: false,
-                        message: "Mật khẩu mới không hợp lệ.",
+                        message: "Invalid new password.",
                     };
                 }
                 const policy = validatePasswordPolicy(nextPassword);
@@ -336,7 +336,7 @@ export const authResolvers = {
                     if (!user) {
                         return {
                             success: false,
-                            message: "Đổi mật khẩu thất bại.",
+                            message: "Failed to change password.",
                         };
                     }
                     if (oldPassword && user.password) {
@@ -347,7 +347,7 @@ export const authResolvers = {
                         if (!ok) {
                             return {
                                 success: false,
-                                message: "Mật khẩu cũ không đúng.",
+                                message: "Incorrect old password.",
                             };
                         }
                     }
@@ -375,7 +375,7 @@ export const authResolvers = {
                 if (!rl.allowed) {
                     return {
                         success: false,
-                        message: "Quá nhiều lần thử. Vui lòng thử lại sau.",
+                        message: "Too many attempts. Please try again later.",
                     };
                 }
                 // Accept legacy `id` variable name from the old FE document
@@ -390,7 +390,7 @@ export const authResolvers = {
                 if (!targetEmail) {
                     return {
                         success: false,
-                        message: "Đổi mật khẩu thất bại.",
+                        message: "Failed to change password.",
                     };
                 }
                 const hashedPassword = await bcrypt.hash(
@@ -425,7 +425,7 @@ export const authResolvers = {
                 if (!rl.allowed) {
                     return {
                         success: false,
-                        message: "Quá nhiều lần thử. Vui lòng thử lại sau.",
+                        message: "Too many attempts. Please try again later.",
                     };
                 }
                 const policy = validatePasswordPolicy(newPassword);
@@ -552,7 +552,7 @@ export const authResolvers = {
                 if (!user?.password) {
                     return {
                         success: false,
-                        message: "Mật khẩu không đúng.",
+                        message: "Incorrect password.",
                     };
                 }
 
@@ -561,7 +561,7 @@ export const authResolvers = {
                 if (!isMatch) {
                     return {
                         success: false,
-                        message: "Mật khẩu không đúng.",
+                        message: "Incorrect password.",
                     };
                 }
 
@@ -585,7 +585,7 @@ export const authResolvers = {
                 15 * 60 * 1000,
             );
             if (!rl.allowed) {
-                throw new Error("Quá nhiều lần thử. Vui lòng thử lại sau.");
+                throw new Error("Too many attempts. Please try again later.");
             }
             try {
                 const decoded = await verifyRefreshToken(refreshToken);
