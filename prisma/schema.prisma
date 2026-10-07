@@ -8,60 +8,60 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  name      String?
-  password  String?
-  handle    String?   @unique
-  description   String?
-  avatar    String?
-  avatarPublicId  String?
-  createdAt DateTime  @default(now())
-  comments  Comment[]
-  posts     Post[]
-  accounts    OAuthAccount[]
-  refreshTokens RefreshToken[]
-  likes       PostLike[]
-  bookmarks   Bookmark[]
-  commentVotes CommentVote[]
+  id             Int            @id @default(autoincrement())
+  email          String         @unique
+  name           String?
+  createdAt      DateTime       @default(now())
+  avatar         String?
+  handle         String?        @unique
+  description    String?
+  password       String?
+  avatarPublicId String?
+  bookmarks      Bookmark[]
+  comments       Comment[]
+  commentVotes   CommentVote[]
+  accounts       OAuthAccount[]
+  posts          Post[]
+  likes          PostLike[]
+  refreshTokens  RefreshToken[]
 }
 
 model OAuthAccount {
-  id                 Int      @id @default(autoincrement())
-  provider           String
-  providerAccountId  String
-  accessToken        String?
-  refreshToken       String?
-  userId             Int
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                Int     @id @default(autoincrement())
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  userId            Int
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
 model Post {
-  id          Int       @id @default(autoincrement())
-  title       String
-  slug        String    @unique
-  content     String
-  createdAt   DateTime  @default(now())
-  authorId    Int
-  description String
-  isPopular   Boolean   @default(false)
-  image       String
-  imagePublicId  String?
-  excerpt     String?
-  isFeatured  Boolean   @default(false)
-  readingTime Int?
-  likesCount  Int       @default(0)
-  updatedAt   DateTime  @updatedAt
-  views       Int       @default(0)
-  comments    Comment[]
-  author      User      @relation(fields: [authorId], references: [id])
-  tags        Tag[]     @relation("PostToTag")
-  categoryId  Int
-  category    Category  @relation(fields: [categoryId], references: [id])
-  likedBy     PostLike[]
-  bookmarkedBy Bookmark[]
+  id            Int        @id @default(autoincrement())
+  title         String
+  slug          String     @unique
+  content       String
+  createdAt     DateTime   @default(now())
+  authorId      Int
+  description   String
+  image         String
+  excerpt       String?
+  isFeatured    Boolean    @default(false)
+  readingTime   Int?
+  updatedAt     DateTime   @updatedAt
+  views         Int        @default(0)
+  categoryId    Int
+  isPopular     Boolean    @default(false)
+  imagePublicId String?
+  likesCount    Int        @default(0)
+  bookmarkedBy  Bookmark[]
+  comments      Comment[]
+  author        User       @relation(fields: [authorId], references: [id])
+  category      Category   @relation(fields: [categoryId], references: [id])
+  likedBy       PostLike[]
+  tags          Tag[]      @relation("PostToTag")
 }
 
 model Tag {
@@ -71,17 +71,17 @@ model Tag {
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
+  id        Int           @id @default(autoincrement())
   content   String
   postId    Int
   authorId  Int
+  createdAt DateTime      @default(now())
   parentId  Int?
-  score     Int      @default(0)
-  createdAt DateTime @default(now())
-  author    User     @relation(fields: [authorId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[] @relation("CommentReplies")
+  score     Int           @default(0)
+  author    User          @relation(fields: [authorId], references: [id])
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]     @relation("CommentReplies")
+  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
   votes     CommentVote[]
 
   @@index([postId])
@@ -93,8 +93,8 @@ model CommentVote {
   commentId Int
   value     Int
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
   @@index([commentId])
@@ -103,9 +103,9 @@ model CommentVote {
 model Category {
   id          Int        @id @default(autoincrement())
   name        String     @unique
-  slug        String     @unique
-  description String?
   parentId    Int?
+  description String?
+  slug        String     @unique
   parent      Category?  @relation("Subcategories", fields: [parentId], references: [id])
   children    Category[] @relation("Subcategories")
   posts       Post[]
@@ -124,8 +124,8 @@ model PostLike {
   userId    Int
   postId    Int
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@index([postId])
@@ -135,8 +135,8 @@ model Bookmark {
   userId    Int
   postId    Int
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@index([postId])
