@@ -3,7 +3,7 @@ import express from "express";
 import "dotenv/config";
 
 import cors from "cors";
-import apolloServer from "./graphql/index.js";
+import apolloServer, { buildContext } from "./graphql/index.js";
 import { v2 as cloudinary } from "cloudinary";
 import multer from "multer";
 import { expressMiddleware } from '@as-integrations/express5'
@@ -16,14 +16,16 @@ cloudinary.config({
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+void upload;
 
 const app = express();
 await apolloServer.start();
 
 app.use(express.static("public"));
 
+// CORS: never `*` when credentials are used. Only explicit FE origins.
 const allowedOrigins = (process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(",").map(item => item.trim())
+    ? process.env.ALLOWED_ORIGINS.split(",").map(item => item.trim()).filter(Boolean)
     : [process.env.URL_FE || "http://localhost:5000"]
 ).flatMap(item => {
     if (!item.startsWith("http://") && !item.startsWith("https://")) {
@@ -35,13 +37,21 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS
 app.use(
     cors({
         origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
+            // Same-origin / curl / server-to-server (no Origin header).
+            if (!origin) {
+                callback(null, true);
+                return;
+            }
+            if (allowedOrigins.includes(origin)) {
                 callback(null, true);
             } else {
-                callback(null, false);
+                callback(new Error("CORS: origin not allowed"));
             }
         },
         credentials: true,
+        methods: ["GET", "POST", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        maxAge: 600,
     }),
 );
 
@@ -49,8 +59,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
     "/graphql",
-    express.json(),
-    expressMiddleware(apolloServer)
+    express.json({ limit: "100kb" }),
+    expressMiddleware(apolloServer, {
+        context: async ({ req }) => buildContext({ req }),
+    })
 );
 
 export default app;
+export { allowedOrigins };

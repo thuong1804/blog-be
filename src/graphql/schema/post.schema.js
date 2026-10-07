@@ -10,12 +10,15 @@ const postTypeDefs = gql`
         description: String!
         excerpt: String
         image: String!
-        imagePublicId: String!
+        imagePublicId: String
         category: Category!
         tags: [Tag]
         views: Int
         isPopular: Boolean!
         readingTime: Int
+        likesCount: Int!
+        likedByMe: Boolean!
+        bookmarkedByMe: Boolean!
         isFeatured: Boolean!
         createdAt: String!
         updatedAt: String!
@@ -38,21 +41,40 @@ const postTypeDefs = gql`
 
     type Query {
         posts(
-            page: Int = 1,
-            pageSize: Int = 10,
-            categorySlug: String,
-            search: String,
+            page: Int = 1
+            pageSize: Int = 10
+            categorySlug: String
+            search: String
+            tag: String
         ): PostPagination!
         postsByTitle(search: String): [Post!]!
-        post(slug: String!): Post
+        post(slug: String, id: Int): Post
+        postDetail(id: Int, slug: String): Post
         popularPosts: [Post!]
         postsLatest(skip: Int = 0, take: Int = 6): [Post!]
         postAllSlugs: [Post]
+        siteStats: SiteStats!
+        relatedPosts(postId: Int!, take: Int = 4): [Post!]!
+        myBookmarks(page: Int = 1, pageSize: Int = 12): PostPagination!
     }
 
     type PostResponse {
         success: Boolean!
         message: String
+    }
+
+    type LikePayload {
+        liked: Boolean!
+        likesCount: Int!
+    }
+
+    type BookmarkPayload {
+        bookmarked: Boolean!
+    }
+
+    type SiteStats {
+        totalViews: Int!
+        totalPosts: Int!
     }
 
     type Mutation {
@@ -63,10 +85,36 @@ const postTypeDefs = gql`
             excerpt: String
             image: String!
             categoryId: Int!
-            authorId: Int!
             tagIds: [Int!]!
+            # Deprecated: author is derived from the access token. Kept
+            # optional so older FE versions don't break; server ignores it.
+            authorId: Int
         ): Post!
-        deletePost(postId: Int!, authorId: Int!): PostResponse!
+        updatePost(
+            id: Int!
+            title: String
+            content: String
+            description: String
+            excerpt: String
+            image: String
+            imagePublicId: String
+            categoryId: Int
+            tagIds: [Int!]
+            isPopular: Boolean
+            isFeatured: Boolean
+            readingTime: Int
+            slug: String
+            # Deprecated: ignored, ownership is checked via access token.
+            authorId: Int
+        ): Post!
+        deletePost(
+            postId: Int!
+            # Deprecated: ignored, ownership is checked via access token.
+            authorId: Int
+        ): PostResponse!
+        incrementPostViews(postId: Int!): Int!
+        toggleLike(postId: Int!): LikePayload!
+        toggleBookmark(postId: Int!): BookmarkPayload!
     }
 `;
 
