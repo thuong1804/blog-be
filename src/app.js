@@ -19,6 +19,15 @@ const upload = multer({ storage: storage });
 void upload;
 
 const app = express();
+
+// Lightweight healthcheck for Render + UptimeRobot/cron-job.org keep-warm ping.
+// Registered BEFORE `await apolloServer.start()` so it responds even during cold start.
+// Must not touch DB, Cloudinary, or auth — pure liveness probe.
+app.get("/healthz", (req, res) => {
+    res.status(200).json({ status: "ok", uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+app.head("/healthz", (req, res) => res.status(200).end());
+
 await apolloServer.start();
 
 app.use(express.static("public"));
