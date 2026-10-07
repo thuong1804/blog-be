@@ -16,6 +16,9 @@ const postTypeDefs = gql`
         views: Int
         isPopular: Boolean!
         readingTime: Int
+        likesCount: Int!
+        likedByMe: Boolean!
+        bookmarkedByMe: Boolean!
         isFeatured: Boolean!
         createdAt: String!
         updatedAt: String!
@@ -51,11 +54,22 @@ const postTypeDefs = gql`
         postsLatest(skip: Int = 0, take: Int = 6): [Post!]
         postAllSlugs: [Post]
         siteStats: SiteStats!
+        relatedPosts(postId: Int!, take: Int = 4): [Post!]!
+        myBookmarks(page: Int = 1, pageSize: Int = 12): PostPagination!
     }
 
     type PostResponse {
         success: Boolean!
         message: String
+    }
+
+    type LikePayload {
+        liked: Boolean!
+        likesCount: Int!
+    }
+
+    type BookmarkPayload {
+        bookmarked: Boolean!
     }
 
     type SiteStats {
@@ -99,6 +113,8 @@ const postTypeDefs = gql`
             authorId: Int
         ): PostResponse!
         incrementPostViews(postId: Int!): Int!
+        toggleLike(postId: Int!): LikePayload!
+        toggleBookmark(postId: Int!): BookmarkPayload!
     }
 `;
 

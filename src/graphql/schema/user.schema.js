@@ -3,7 +3,7 @@ import { gql } from "graphql-tag";
 export const userTypeDefs = gql`
     type User {
         id: Int!
-        name: String!
+        name: String
         handle: String!
         description: String
         email: String!
@@ -17,6 +17,14 @@ export const userTypeDefs = gql`
         userByPosts(handle: String!): User
         users: [User!]!
         userDetail(id: Int!): User
+        authorStats(handle: String!): AuthorStats!
+    }
+
+    type AuthorStats {
+        totalPosts: Int!
+        totalViews: Int!
+        totalLikes: Int!
+        totalBookmarks: Int!
     }
 
     type Mutation {

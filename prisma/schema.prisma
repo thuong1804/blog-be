@@ -21,6 +21,9 @@ model User {
   posts     Post[]
   accounts    OAuthAccount[]
   refreshTokens RefreshToken[]
+  likes       PostLike[]
+  bookmarks   Bookmark[]
+  commentVotes CommentVote[]
 }
 
 model OAuthAccount {
@@ -49,6 +52,7 @@ model Post {
   excerpt     String?
   isFeatured  Boolean   @default(false)
   readingTime Int?
+  likesCount  Int       @default(0)
   updatedAt   DateTime  @updatedAt
   views       Int       @default(0)
   comments    Comment[]
@@ -56,6 +60,8 @@ model Post {
   tags        Tag[]     @relation("PostToTag")
   categoryId  Int
   category    Category  @relation(fields: [categoryId], references: [id])
+  likedBy     PostLike[]
+  bookmarkedBy Bookmark[]
 }
 
 model Tag {
@@ -69,9 +75,29 @@ model Comment {
   content   String
   postId    Int
   authorId  Int
+  parentId  Int?
+  score     Int      @default(0)
   createdAt DateTime @default(now())
   author    User     @relation(fields: [authorId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  votes     CommentVote[]
+
+  @@index([postId])
+  @@index([parentId])
+}
+
+model CommentVote {
+  userId    Int
+  commentId Int
+  value     Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
 }
 
 model Category {
@@ -92,6 +118,28 @@ model OTP {
   expiresAt DateTime
   createdAt DateTime @default(now())
   verified  Boolean  @default(false)
+}
+
+model PostLike {
+  userId    Int
+  postId    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId])
+}
+
+model Bookmark {
+  userId    Int
+  postId    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId])
 }
 
 model RefreshToken {

@@ -78,6 +78,54 @@ if (typeof setInterval !== "undefined") {
 }
 
 // ---------------------------------------------------------------------------
+// Comment HTML sanitization (allowlist). The comment editor produces a small
+// safe subset (b/i/ul/ol/li/blockquote/p/br). Everything else — including
+// all attributes (kills onclick/error handlers) — is dropped.
+const COMMENT_ALLOWED_TAGS = new Set([
+    "b",
+    "i",
+    "em",
+    "strong",
+    "u",
+    "ul",
+    "ol",
+    "li",
+    "blockquote",
+    "p",
+    "br",
+]);
+
+export function sanitizeCommentHtml(input, maxLength = 2000) {
+    let html = String(input || "");
+    // Remove dangerous containers entirely (content included).
+    html = html
+        .replace(/<script[\s\S]*?<\/script\s*>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style\s*>/gi, " ")
+        .replace(/<!--[\s\S]*?-->/g, " ");
+    // Keep allowed tags (no attributes), drop the rest but keep inner text.
+    html = html.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, (m, tag) => {
+        const t = String(tag).toLowerCase();
+        if (!COMMENT_ALLOWED_TAGS.has(t)) return " ";
+        if (m.startsWith("</")) return `</${t}>`;
+        return t === "br" ? "<br>" : `<${t}>`;
+    });
+    const text = html
+        .replace(/<[^>]*>/g, " ")
+        .replace(/&[a-zA-Z0-9#]+;/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    if (!text) {
+        throw new Error("Comment content is required.");
+    }
+    if (text.length > maxLength) {
+        throw new Error(
+            `Comment is too long (max ${maxLength} characters).`,
+        );
+    }
+    return html.trim();
+}
+
+// ---------------------------------------------------------------------------
 // Client IP (works behind 1 trusted proxy; app should set trust proxy
 // appropriately or run behind a proxy that sets x-forwarded-for).
 // ---------------------------------------------------------------------------

@@ -48,6 +48,7 @@ export const userResolvers = {
                                 author: true,
                                 updatedAt: true,
                                 createdAt: true,
+                                likesCount: true,
                                 category: {
                                     select: {
                                         name: true,
@@ -122,6 +123,31 @@ export const userResolvers = {
                 console.error("Error fetching user detail");
                 throw new Error("Failed to fetch users");
             }
+        },
+        authorStats: async (_, { handle }) => {
+            const user = await prisma.user.findUnique({
+                where: { handle: String(handle) },
+                select: { id: true },
+            });
+            if (!user) {
+                throw new Error("Author not found.");
+            }
+            const [postAgg, totalBookmarks] = await Promise.all([
+                prisma.post.aggregate({
+                    where: { authorId: user.id },
+                    _count: { id: true },
+                    _sum: { views: true, likesCount: true },
+                }),
+                prisma.bookmark.count({
+                    where: { post: { authorId: user.id } },
+                }),
+            ]);
+            return {
+                totalPosts: postAgg._count.id ?? 0,
+                totalViews: postAgg._sum.views ?? 0,
+                totalLikes: postAgg._sum.likesCount ?? 0,
+                totalBookmarks,
+            };
         },
     },
     Mutation: {

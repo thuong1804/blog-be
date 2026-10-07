@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { formatSlug } from "../../utils/index.js";
+import { estimateReadingTime, formatSlug } from "../../utils/index.js";
 import { requireAuth } from "../../middleware/auth.js";
 import {
     checkRateLimit,
@@ -14,6 +14,36 @@ const prisma = new PrismaClient();
 const VIEW_THROTTLE_MS = 60 * 60 * 1000;
 
 export const postResolvers = {
+    Post: {
+        likedByMe: async (parent, _, context) => {
+            const userId = context?.user?.userId;
+            if (!userId || !parent?.id) return false;
+            const like = await prisma.postLike.findUnique({
+                where: {
+                    userId_postId: {
+                        userId: Number(userId),
+                        postId: Number(parent.id),
+                    },
+                },
+                select: { userId: true },
+            });
+            return !!like;
+        },
+        bookmarkedByMe: async (parent, _, context) => {
+            const userId = context?.user?.userId;
+            if (!userId || !parent?.id) return false;
+            const bookmark = await prisma.bookmark.findUnique({
+                where: {
+                    userId_postId: {
+                        userId: Number(userId),
+                        postId: Number(parent.id),
+                    },
+                },
+                select: { userId: true },
+            });
+            return !!bookmark;
+        },
+    },
     Query: {
         posts: async (_parent, args) => {
             const {
@@ -89,6 +119,7 @@ export const postResolvers = {
                         image: true,
                         updatedAt: true,
                         createdAt: true,
+                        likesCount: true,
                         author: true,
                         category: {
                             select: {
@@ -181,6 +212,7 @@ export const postResolvers = {
                     author: true,
                     updatedAt: true,
                     createdAt: true,
+                    likesCount: true,
                     category: {
                         select: {
                             name: true,
@@ -213,6 +245,7 @@ export const postResolvers = {
                     updatedAt: true,
                     createdAt: true,
                     author: true,
+                    likesCount: true,
                     category: {
                         select: {
                             name: true,
@@ -245,6 +278,7 @@ export const postResolvers = {
                     createdAt: true,
                     description: true,
                     author: true,
+                    likesCount: true,
                     category: {
                         select: {
                             name: true,
@@ -264,6 +298,7 @@ export const postResolvers = {
             return await prisma.post.findMany({
                 select: {
                     slug: true,
+                    updatedAt: true,
                     category: {
                         select: {
                             slug: true,
@@ -284,6 +319,97 @@ export const postResolvers = {
                 totalViews: viewsAgg._sum.views ?? 0,
                 totalPosts,
             };
+        },
+        myBookmarks: async (_parent, { page = 1, pageSize = 12 }, context) => {
+            const authUser = requireAuth(context);
+            const userId = Number(authUser.userId);
+            const skip = (page - 1) * pageSize;
+
+            const [rows, total] = await Promise.all([
+                prisma.bookmark.findMany({
+                    where: { userId },
+                    orderBy: { createdAt: "desc" },
+                    skip,
+                    take: pageSize,
+                    include: {
+                        post: {
+                            include: {
+                                tags: true,
+                                author: true,
+                                category: {
+                                    include: { parent: true },
+                                },
+                            },
+                        },
+                    },
+                }),
+                prisma.bookmark.count({ where: { userId } }),
+            ]);
+
+            return {
+                items: rows.map((row) => row.post),
+                meta: {
+                    total,
+                    totalPages: Math.ceil(total / pageSize),
+                    currentPage: page,
+                    pageSize,
+                },
+            };
+        },
+        relatedPosts: async (_parent, { postId, take = 4 }) => {
+            const source = await prisma.post.findUnique({
+                where: { id: postId },
+                select: {
+                    id: true,
+                    categoryId: true,
+                    tags: { select: { id: true } },
+                },
+            });
+            if (!source) return [];
+
+            const tagIds = source.tags.map((t) => t.id);
+            const candidates = await prisma.post.findMany({
+                where: {
+                    id: { not: postId },
+                    OR: [
+                        { categoryId: source.categoryId },
+                        ...(tagIds.length
+                            ? [{ tags: { some: { id: { in: tagIds } } } }]
+                            : []),
+                    ],
+                },
+                take: Math.max(take * 3, 12),
+                orderBy: { createdAt: "desc" },
+                include: {
+                    tags: { select: { id: true, name: true } },
+                    author: true,
+                    category: {
+                        include: { parent: true },
+                    },
+                },
+            });
+
+            const tagSet = new Set(tagIds);
+            return candidates
+                .map((post) => {
+                    const sharedTags = post.tags.filter((t) =>
+                        tagSet.has(t.id),
+                    ).length;
+                    const sameCategory =
+                        post.categoryId === source.categoryId ? 1 : 0;
+                    return {
+                        post,
+                        score: sharedTags * 2 + sameCategory,
+                    };
+                })
+                .sort(
+                    (a, b) =>
+                        b.score - a.score ||
+                        b.post.createdAt.getTime() -
+                            a.post.createdAt.getTime(),
+                )
+                .slice(0, Math.max(take, 0))
+                .map(({ post }) => post);
         },
     },
     Mutation: {
@@ -320,6 +446,7 @@ export const postResolvers = {
                         image,
                         categoryId,
                         authorId,
+                        readingTime: estimateReadingTime(markdownContent),
                         tags: {
                             connect: (tagIds || []).map((id) => ({ id })),
                         },
@@ -406,7 +533,13 @@ export const postResolvers = {
                     data.title = stripHtml(title, 200);
                 if (targetSlug !== undefined) data.slug = targetSlug;
                 if (content !== undefined) {
-                    data.content = NodeHtmlMarkdown.translate(content);
+                    const markdownContent = NodeHtmlMarkdown.translate(content);
+                    data.content = markdownContent;
+                    // Server is the source of truth: recompute reading time
+                    // from the new content, ignore client-supplied value.
+                    data.readingTime = estimateReadingTime(markdownContent);
+                } else if (readingTime !== undefined) {
+                    data.readingTime = readingTime;
                 }
                 if (description !== undefined)
                     data.description = stripHtml(description, 5000);
@@ -417,7 +550,6 @@ export const postResolvers = {
                 if (categoryId !== undefined) data.categoryId = categoryId;
                 if (isPopular !== undefined) data.isPopular = isPopular;
                 if (isFeatured !== undefined) data.isFeatured = isFeatured;
-                if (readingTime !== undefined) data.readingTime = readingTime;
 
                 if (Array.isArray(tagIds)) {
                     data.tags = {
@@ -510,6 +642,75 @@ export const postResolvers = {
                 select: { views: true },
             });
             return updated.views ?? 0;
+        },
+        toggleLike: async (_, { postId }, context) => {
+            const authUser = requireAuth(context);
+            const userId = Number(authUser.userId);
+
+            const post = await prisma.post.findUnique({
+                where: { id: postId },
+                select: { id: true },
+            });
+            if (!post) {
+                throw new Error("Post not found.");
+            }
+
+            const key = { userId_postId: { userId, postId } };
+            const existing = await prisma.postLike.findUnique({
+                where: key,
+                select: { userId: true },
+            });
+
+            if (existing) {
+                const [, updated] = await prisma.$transaction([
+                    prisma.postLike.delete({ where: key }),
+                    prisma.post.update({
+                        where: { id: postId },
+                        data: { likesCount: { decrement: 1 } },
+                        select: { likesCount: true },
+                    }),
+                ]);
+                return {
+                    liked: false,
+                    likesCount: Math.max(0, updated.likesCount ?? 0),
+                };
+            }
+
+            const [, updated] = await prisma.$transaction([
+                prisma.postLike.create({ data: { userId, postId } }),
+                prisma.post.update({
+                    where: { id: postId },
+                    data: { likesCount: { increment: 1 } },
+                    select: { likesCount: true },
+                }),
+            ]);
+            return { liked: true, likesCount: updated.likesCount ?? 0 };
+        },
+        toggleBookmark: async (_, { postId }, context) => {
+            const authUser = requireAuth(context);
+            const userId = Number(authUser.userId);
+
+            const post = await prisma.post.findUnique({
+                where: { id: postId },
+                select: { id: true },
+            });
+            if (!post) {
+                throw new Error("Post not found.");
+            }
+
+            const key = { userId_postId: { userId, postId } };
+            const existing = await prisma.bookmark.findUnique({
+                where: key,
+                select: { userId: true },
+            });
+
+            if (existing) {
+                await prisma.bookmark.delete({ where: key });
+                return { bookmarked: false };
+            }
+
+            await prisma.bookmark.create({ data: { userId, postId } });
+            return { bookmarked: true };
         },
     },
 };
