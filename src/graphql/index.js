@@ -8,6 +8,9 @@ const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
     introspection: process.env.NODE_ENV !== "production",
+    plugins: [
+        ApolloServerPluginLandingPageLocalDefault({ embed: true })
+    ],
 });
 
 export function buildContext({ req }) {
