@@ -1,5 +1,6 @@
 // src/graphql/index.js
 import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 import typeDefs from "./schema/index.schema.js";
 import resolvers from "./resolvers/resolvers.js";
 import { getUserFromRequest } from "../middleware/auth.js";
